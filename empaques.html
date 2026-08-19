@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tipos de empaque — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <strong>Envíos Multicolor</strong>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="productos.html">Productos</a>
+      <a href="empaques.html" class="activo">Empaques</a>
+      <a href="registrar-salida.html">Registrar salida</a>
+      <a href="historial.html">Historial</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <h1>Tipos de empaque</h1>
+      <form id="form-empaque">
+        <div class="campo">
+          <label for="nombre-empaque">Nombre del tipo de empaque</label>
+          <input type="text" id="nombre-empaque" name="nombre" placeholder="Ej: Baldes, Cajas, Paquetes 4x1" required />
+        </div>
+        <button type="submit">Guardar tipo de empaque</button>
+      </form>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Listado de tipos de empaque</h2>
+      <table id="tabla-empaques">
+        <thead>
+          <tr>
+            <th>Tipo de empaque</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Se completa dinámicamente desde js/empaques.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/empaques.js"></script>
+</body>
+</html>

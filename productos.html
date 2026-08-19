@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Productos — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <strong>Envíos Multicolor</strong>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="productos.html" class="activo">Productos</a>
+      <a href="empaques.html">Empaques</a>
+      <a href="registrar-salida.html">Registrar salida</a>
+      <a href="historial.html">Historial</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <h1>Productos y stock</h1>
+      <form id="form-producto">
+        <div class="campo">
+          <label for="nombre">Nombre del producto</label>
+          <input type="text" id="nombre" name="nombre" required />
+        </div>
+        <div class="campo">
+          <label for="stock">Stock inicial</label>
+          <input type="number" id="stock" name="stock" min="0" required />
+        </div>
+        <button type="submit">Guardar producto</button>
+      </form>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Listado de productos</h2>
+      <table id="tabla-productos">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Se completa dinámicamente desde js/productos.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/productos.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrar salida — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <strong>Envíos Multicolor</strong>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="productos.html">Productos</a>
+      <a href="empaques.html">Empaques</a>
+      <a href="registrar-salida.html" class="activo">Registrar salida</a>
+      <a href="historial.html">Historial</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <h1>Registrar salida de mercadería</h1>
+      <form id="form-salida">
+        <div class="campo">
+          <label for="producto">Producto</label>
+          <select id="producto" name="producto_id" required>
+            <!-- Se completa dinámicamente desde js/productos.js -->
+          </select>
+        </div>
+        <div class="campo">
+          <label for="cantidad">Cantidad despachada</label>
+          <input type="number" id="cantidad" name="cantidad" min="1" required />
+        </div>
+        <div class="campo">
+          <label for="tipo-empaque">Tipo de empaque</label>
+          <select id="tipo-empaque" name="tipo_empaque_id" required>
+            <!-- Se completa dinámicamente desde js/empaques.js -->
+          </select>
+        </div>
+        <div class="campo">
+          <label for="cantidad-empaque">Cantidad de empaques</label>
+          <input type="number" id="cantidad-empaque" name="cantidad_empaque" min="1" />
+        </div>
+        <div class="campo">
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" name="observaciones" rows="3"></textarea>
+        </div>
+        <button type="submit">Registrar salida</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/productos.js"></script>
+  <script src="js/empaques.js"></script>
+  <script src="js/salidas.js"></script>
+</body>
+</html>

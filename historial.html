@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historial — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <strong>Envíos Multicolor</strong>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="productos.html">Productos</a>
+      <a href="empaques.html">Empaques</a>
+      <a href="registrar-salida.html">Registrar salida</a>
+      <a href="historial.html" class="activo">Historial</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <h1>Historial de movimientos</h1>
+      <table id="tabla-historial">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Tipo de empaque</th>
+            <th>Cant. empaques</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Se completa dinámicamente desde js/historial.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/historial.js"></script>
+</body>
+</html>

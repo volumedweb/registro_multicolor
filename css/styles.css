@@ -1,0 +1,107 @@
+/* ============================================================
+   Envíos Multicolor — estilos generales
+   ============================================================ */
+
+:root {
+  --color-fondo: #f5f6f8;
+  --color-superficie: #ffffff;
+  --color-texto: #1f2430;
+  --color-texto-suave: #616a7d;
+  --color-primario: #3d5afe;
+  --color-primario-oscuro: #2a3eb1;
+  --color-borde: #e1e4ea;
+  --color-exito: #2e7d32;
+  --color-alerta: #c62828;
+  --radio: 8px;
+  --espaciado: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+header.app-header {
+  background: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borde);
+  padding: var(--espaciado) 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header.app-header nav a {
+  margin-left: 16px;
+  color: var(--color-texto-suave);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+header.app-header nav a:hover,
+header.app-header nav a.activo {
+  color: var(--color-primario);
+}
+
+main {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.tarjeta {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+form .campo {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label {
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+input, select, textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  font-size: 1rem;
+}
+
+button {
+  background: var(--color-primario);
+  color: #fff;
+  border: none;
+  border-radius: var(--radio);
+  padding: 10px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--color-primario-oscuro);
+}

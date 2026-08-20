@@ -44,6 +44,7 @@ css/styles.css           Estilos generales
 
 js/supabaseClient.js     Conexión a Supabase
 js/login.js              Lógica de inicio de sesión
+js/auth.js               Protege las páginas (redirige a login.html sin sesión) y cierra sesión
 js/clientes.js           Lógica del catálogo de clientes/destinatarios
 js/productos.js          Lógica de productos y stock
 js/empaques.js           Lógica de tipos de empaque
@@ -72,10 +73,15 @@ supabase/migracion_folio_unico_y_ciudad.sql  Migración puntual ya usada en el p
       real de Supabase: solo un usuario autenticado puede leer/escribir.
 - [x] Conexión real a Supabase (`js/supabaseClient.js` con la Project
       URL y la publishable key reales).
-- [ ] Autenticación real (login.html ya tiene el formulario y la
-      llamada a Supabase Auth; falta crear el usuario administrador
-      en Supabase Auth y proteger las demás páginas). No habrá alta
-      de más usuarios por ahora — un solo administrador.
+- [x] Protección de páginas (`js/auth.js`): todas las páginas menos
+      login.html verifican que haya sesión iniciada, si no la hay
+      redirigen a login.html. Cada página protegida tiene un link
+      "Cerrar sesión" en el menú.
+- [ ] Falta crear el usuario administrador en Supabase Auth
+      (Authentication → Users → Add user). Hasta que no exista ese
+      usuario, el login va a fallar siempre y las páginas van a
+      redirigir en bucle a login.html. No habrá alta de más usuarios
+      por ahora — un solo administrador.
 - [ ] Implementación de la lógica real de cada página (por ahora los
       `js/*.js` son funciones de acceso a datos con TODOs).
 - [ ] Definición del hosting final.

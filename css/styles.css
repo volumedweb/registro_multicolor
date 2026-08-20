@@ -638,3 +638,14 @@ button:hover {
 .modal-factura .factura-hoja {
   margin: 12px auto 24px;
 }
+
+/* Link "Cerrar sesión" al final del menú, separado del resto */
+header.app-header nav a.cerrar-sesion {
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid var(--color-borde);
+}
+
+header.app-header nav a.cerrar-sesion:hover {
+  color: var(--color-alerta);
+}

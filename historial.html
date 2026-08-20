@@ -6,7 +6,7 @@
   <title>Historial — Envíos Multicolor</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
+<body hidden>
   <header class="app-header">
     <strong>Envíos Multicolor</strong>
     <nav>
@@ -16,6 +16,7 @@
       <a href="empaques.html">Empaques</a>
       <a href="realizar-envio.html">Realizar envío</a>
       <a href="historial.html" class="activo">Historial</a>
+      <a href="#" id="cerrar-sesion" class="cerrar-sesion">Cerrar sesión</a>
     </nav>
   </header>
 
@@ -103,6 +104,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/factura.js"></script>
   <script src="js/historial.js"></script>

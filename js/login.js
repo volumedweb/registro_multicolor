@@ -2,13 +2,19 @@
 // Login — acceso del usuario administrador
 // ============================================================
 // Usa la autenticación de Supabase (ver js/supabaseClient.js).
-// Al loguearse correctamente redirige a index.html.
-//
-// TODO: una vez conectado Supabase de verdad, revisar también
-// que las páginas protegidas (todas menos login.html) redirijan
-// acá cuando no haya una sesión activa.
+// Al loguearse correctamente redirige a index.html. Las demás
+// páginas (todas menos esta) se protegen con js/auth.js, que
+// redirige para acá si no hay sesión activa.
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Si ya había una sesión iniciada (ej. se volvió a esta pantalla
+  // por error), no hace falta loguearse de nuevo.
+  const { data } = await supabaseClient.auth.getSession();
+  if (data.session) {
+    window.location.href = "index.html";
+    return;
+  }
+
   document.getElementById("form-login").addEventListener("submit", manejarLogin);
 });
 

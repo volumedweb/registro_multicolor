@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ingresar con código — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="login-split">
+    <div class="login-marca">
+      <strong>Envíos Multicolor</strong>
+      <p>
+        Ingresá el código que te compartió el dueño o administrador de
+        tu empresa. Te llevamos directo a tu sección según tu rol.
+      </p>
+    </div>
+
+    <div class="login-formulario">
+      <form id="form-codigo">
+        <h1>Ingresar con código</h1>
+        <div class="campo">
+          <label for="codigo">Código de acceso</label>
+          <input type="text" id="codigo" name="codigo" placeholder="Ej: MC-7F2K9Q" required />
+        </div>
+        <button type="submit">Ingresar</button>
+
+        <p class="codigo-nota">
+          No hace falta usuario ni contraseña aparte — el código te
+          identifica y te dirige automáticamente a la vista de
+          administrador o de veedor.
+        </p>
+
+        <a href="login.html" class="volver-login">← Volver al login principal</a>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/acceso-codigo.js"></script>
+</body>
+</html>

@@ -363,6 +363,91 @@ button:hover {
   }
 }
 
+/* ============================================================
+   Login — separador "o" + botón hacia el ingreso por código, y
+   estilos propios de acceso-codigo.html (mismo layout que login.html)
+   ============================================================ */
+
+.separador-o {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 16px;
+  color: var(--color-texto-suave);
+  font-size: 0.8rem;
+}
+
+.separador-o::before,
+.separador-o::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-borde);
+}
+
+.link-rol {
+  display: block;
+  text-align: center;
+  border: 1px solid var(--color-primario);
+  color: var(--color-primario);
+  background: transparent;
+  border-radius: var(--radio);
+  padding: 10px 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link-rol:hover {
+  background: rgba(132, 99, 168, 0.08);
+}
+
+.codigo-nota {
+  margin-top: 18px;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.volver-login {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  text-decoration: none;
+}
+
+.volver-login:hover {
+  color: var(--color-primario);
+}
+
+/* Insignia de rol, agregada por js/auth.js junto al nombre de la app
+   en el header (Dueño / Administrador / Veedor) */
+.badge-rol {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--color-acento);
+  color: #fff;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* Aviso fijo en la vista del veedor: le recuerda que es de solo lectura */
+.aviso-veedor {
+  background: rgba(79, 132, 150, 0.1);
+  border: 1px solid var(--color-acento);
+  color: var(--color-acento);
+  border-radius: var(--radio);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  margin-bottom: 20px;
+}
+
 /* Link a la nota de envío imprimible, debajo del botón de confirmar */
 .link-factura {
   display: block;

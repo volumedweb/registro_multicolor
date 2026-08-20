@@ -35,6 +35,43 @@
 create sequence if not exists seq_envio start 1;
 
 -- ------------------------------------------------------------
+-- Perfiles de usuario (roles) — agregado 2026-08-20
+-- ------------------------------------------------------------
+-- Una fila por cada persona que puede iniciar sesión, además de su
+-- cuenta real en Supabase Auth (auth.users). "rol" define qué puede
+-- hacer:
+--   - dueno: creó la cuenta de la empresa. Entra con correo y
+--     contraseña por login.html, igual que el administrador único
+--     de antes. Puede todo lo que puede un administrador.
+--   - administrador: mismo nivel de acceso que el dueño sobre los
+--     datos (crear/editar/eliminar clientes, productos, envíos,
+--     etc.), pero no gestiona otras cuentas de administrador.
+--   - veedor: solo lectura. Ve un único historial (veedor.html) y
+--     puede buscar/descargar facturas, nada más.
+--
+-- "codigo_acceso" es exclusivo de administrador/veedor: es a la vez
+-- el identificador que la persona escribe en acceso-codigo.html y la
+-- contraseña real de su cuenta de Supabase Auth (ver la función
+-- login_por_codigo en supabase/rls.sql). El dueño no usa código,
+-- entra con su correo real.
+--
+-- "activo" permite revocar el acceso de alguien sin borrar su
+-- historial de movimientos (queda desactivado, no eliminado).
+--
+-- Por ahora estas cuentas se crean a mano (Supabase Auth ->
+-- Authentication -> Add user, más un insert acá) — todavía no hay
+-- una pantalla en la app para generarlas.
+create table perfiles (
+  id             uuid primary key references auth.users (id) on delete cascade,
+  rol            text not null check (rol in ('dueno', 'administrador', 'veedor')),
+  nombre         text not null,
+  codigo_acceso  text unique,
+  activo         boolean not null default true,
+  creado_por     uuid references perfiles (id),
+  creado_en      timestamptz not null default now()
+);
+
+-- ------------------------------------------------------------
 -- Clientes / destinatarios
 -- ------------------------------------------------------------
 -- direccion y ciudad son los datos "de base" del cliente: se cargan al

@@ -1,13 +1,13 @@
 // ============================================================
 // Conexión a Supabase
 // ============================================================
-// TODO: reemplazar con los datos reales del proyecto de Supabase
-// (Project Settings -> API). La "anon key" es segura de exponer
-// en el frontend siempre que las políticas de Row Level Security
-// (RLS) estén correctamente configuradas en las tablas.
+// Datos reales del proyecto (Settings -> API Keys). La publishable
+// key es segura de exponer en el frontend porque las políticas de
+// Row Level Security (RLS) ya están aplicadas (ver supabase/rls.sql):
+// sin sesión iniciada, esta key sola no permite leer ni escribir nada.
 
-const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
-const SUPABASE_ANON_KEY = "TU-ANON-KEY";
+const SUPABASE_URL = "https://lvrpptaczxtbivlhkbsy.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_H392zh5asyxKPOCwvxz9yQ_Fan1ROgi";
 
 // Requiere incluir el script del SDK de Supabase en el HTML antes de este
 // archivo, por ejemplo:

@@ -12,6 +12,7 @@
     <nav>
       <a href="index.html">Inicio</a>
       <a href="productos.html">Productos</a>
+      <a href="clientes.html">Clientes</a>
       <a href="empaques.html">Empaques</a>
       <a href="realizar-envio.html" class="activo">Realizar envío</a>
       <a href="historial.html">Historial</a>
@@ -27,27 +28,46 @@
         <div class="envio-cabecera">
           <div class="campo-envio">
             <label for="nombre-cliente">Nombre del cliente</label>
-            <input type="text" id="nombre-cliente" name="nombre_cliente" placeholder="Ej: Distribuidora Sol" required />
+            <input
+              type="text"
+              id="nombre-cliente"
+              name="nombre_cliente"
+              list="lista-clientes"
+              autocomplete="off"
+              placeholder="Escribí para buscar o cargar uno nuevo"
+              required
+            />
+            <!-- Guarda el id del cliente cuando coincide con uno ya registrado.
+                 Si queda vacío, js/realizar-envio.js debe crear un cliente nuevo. -->
+            <input type="hidden" id="cliente-id" name="cliente_id" />
+            <datalist id="lista-clientes">
+              <!-- Se completa dinámicamente desde js/clientes.js con los clientes existentes -->
+            </datalist>
           </div>
           <div class="campo-envio">
             <label for="codigo-envio">Código de envío</label>
             <input type="text" id="codigo-envio" name="codigo_envio" placeholder="Se genera al confirmar" disabled />
+            <span class="nota-campo">Folio único del envío (antes eran dos, uno por producto y otro por empaque — ahora es uno solo)</span>
           </div>
           <div class="campo-envio">
             <label for="fecha-envio">Fecha</label>
-            <input type="date" id="fecha-envio" name="fecha" required />
+            <input type="date" id="fecha-envio" name="fecha" disabled />
+            <span class="nota-campo">Siempre la fecha de hoy, es automática</span>
           </div>
           <div class="campo-envio">
             <label for="telefono-cliente">Teléfono</label>
             <input type="tel" id="telefono-cliente" name="telefono" placeholder="Ej: 700 00000" />
+            <span class="nota-campo" id="nota-telefono">Se autocompleta si el cliente ya lo tiene registrado</span>
           </div>
           <div class="campo-envio">
             <label for="direccion-cliente">Dirección</label>
             <input type="text" id="direccion-cliente" name="direccion" placeholder="Ej: Av. Siempre Viva 123" />
+            <span class="nota-campo" id="nota-direccion">Se autocompleta si el cliente ya la tiene registrada</span>
           </div>
           <div class="campo-envio">
             <label for="ciudad-destino">Ciudad</label>
             <input type="text" id="ciudad-destino" name="ciudad_destino" placeholder="Ej: La Paz" required />
+            <span class="nota-campo" id="nota-ciudad">Se autocompleta si el cliente ya la tiene registrada</span>
           </div>
         </div>
 
@@ -61,10 +81,21 @@
             </div>
 
             <div class="fila-entrada">
-              <select id="select-producto" name="producto_id">
+              <div class="campo-buscable">
+                <input
+                  type="text"
+                  id="input-producto"
+                  list="lista-productos-disponibles"
+                  autocomplete="off"
+                  placeholder="Buscar producto por nombre o código"
+                />
+                <!-- Id del producto elegido; js/realizar-envio.js lo resuelve
+                     cuando el texto coincide con una opción de la datalist -->
+                <input type="hidden" id="select-producto" name="producto_id" />
+              </div>
+              <datalist id="lista-productos-disponibles">
                 <!-- Se completa dinámicamente desde js/productos.js -->
-                <option value="">Nombre producto</option>
-              </select>
+              </datalist>
               <input type="number" id="input-cantidad-producto" min="1" placeholder="Cantidad" />
             </div>
 
@@ -103,6 +134,7 @@
 
         <div class="envio-acciones">
           <button type="submit">Realizar envío</button>
+          <a id="link-factura" class="link-factura" href="#" target="_blank" hidden>Ver / imprimir la nota de envío →</a>
         </div>
       </form>
     </div>
@@ -111,8 +143,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/clientes.js"></script>
   <script src="js/productos.js"></script>
   <script src="js/empaques.js"></script>
+  <script src="js/salidas.js"></script>
   <script src="js/realizar-envio.js"></script>
 </body>
 </html>

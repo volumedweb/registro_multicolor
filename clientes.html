@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clientes — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <strong>Envíos Multicolor</strong>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="productos.html">Productos</a>
+      <a href="clientes.html" class="activo">Clientes</a>
+      <a href="empaques.html">Empaques</a>
+      <a href="realizar-envio.html">Realizar envío</a>
+      <a href="historial.html">Historial</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <h1>Clientes</h1>
+      <form id="form-cliente">
+        <div class="campo">
+          <label for="nombre-cliente">Nombre del cliente</label>
+          <input type="text" id="nombre-cliente" name="nombre" placeholder="Ej: Distribuidora Sol" required />
+        </div>
+        <div class="campo">
+          <label for="telefono-cliente">Teléfono</label>
+          <input type="tel" id="telefono-cliente" name="telefono" placeholder="Ej: 700 00000" />
+        </div>
+        <div class="campo">
+          <label for="direccion-cliente">Dirección</label>
+          <input type="text" id="direccion-cliente" name="direccion" placeholder="Ej: Av. Siempre Viva 123" />
+        </div>
+        <div class="campo">
+          <label for="ciudad-cliente">Ciudad</label>
+          <input type="text" id="ciudad-cliente" name="ciudad" placeholder="Ej: La Paz" />
+        </div>
+        <button type="submit">Guardar cliente</button>
+      </form>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Listado de clientes</h2>
+      <table id="tabla-clientes">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Ciudad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Se completa dinámicamente desde js/clientes.js -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/clientes.js"></script>
+</body>
+</html>

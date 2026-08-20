@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ingresar — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="login-split">
+    <div class="login-marca">
+      <strong>Envíos Multicolor</strong>
+      <p>Registro y control de salida de mercadería. Accedé con tu cuenta de administrador.</p>
+    </div>
+
+    <div class="login-formulario">
+      <form id="form-login">
+        <h1>Iniciar sesión</h1>
+        <div class="campo">
+          <label for="usuario">Usuario</label>
+          <input type="email" id="usuario" name="usuario" placeholder="admin@enviosmulticolor.com" required />
+        </div>
+        <div class="campo">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit">Ingresar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

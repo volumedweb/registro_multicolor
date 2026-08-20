@@ -3,15 +3,16 @@
    ============================================================ */
 
 :root {
-  --color-fondo: #f5f6f8;
-  --color-superficie: #ffffff;
-  --color-texto: #1f2430;
-  --color-texto-suave: #616a7d;
-  --color-primario: #3d5afe;
-  --color-primario-oscuro: #2a3eb1;
-  --color-borde: #e1e4ea;
-  --color-exito: #2e7d32;
-  --color-alerta: #c62828;
+  --color-fondo: #ebe4ee;
+  --color-superficie: #f5eff7;
+  --color-texto: #332b3a;
+  --color-texto-suave: #746b7d;
+  --color-primario: #8463a8;
+  --color-primario-oscuro: #6b4e8c;
+  --color-borde: #d9cbe0;
+  --color-exito: #557a5f;
+  --color-alerta: #b1524f;
+  --color-acento: #4f8496;
   --radio: 8px;
   --espaciado: 16px;
 }
@@ -151,6 +152,28 @@ button:hover {
   outline: none;
 }
 
+/* Campo que reconoció un cliente ya registrado en el catálogo */
+.envio-cabecera .campo-envio input.coincidencia {
+  color: var(--color-exito);
+  font-weight: 600;
+}
+
+/* Texto de ayuda bajo teléfono/dirección: aclara qué datos se
+   guardan en el cliente y cuáles quedan solo en este envío */
+.envio-cabecera .campo-envio .nota-campo {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: 0.7rem;
+  line-height: 1.3;
+  padding: 0 12px 8px;
+  margin-top: -4px;
+}
+
+/* Envoltorio del campo de producto con autocompletado + id oculto */
+.panel-envio .fila-entrada .campo-buscable {
+  width: 100%;
+}
+
 .envio-columnas {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -266,4 +289,352 @@ button:hover {
   .envio-columnas {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============================================================
+   Login — pantalla dividida (panel de marca + formulario)
+   Sin header/nav: es la pantalla previa a entrar a la app.
+   ============================================================ */
+
+.login-split {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.login-marca {
+  background: linear-gradient(160deg, var(--color-primario), var(--color-primario-oscuro));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px;
+}
+
+.login-marca strong {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 14px;
+}
+
+.login-marca p {
+  max-width: 340px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  opacity: 0.92;
+  margin: 0;
+}
+
+.login-formulario {
+  background: var(--color-superficie);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.login-formulario form {
+  width: 100%;
+  max-width: 320px;
+}
+
+.login-formulario h1 {
+  font-size: 1.3rem;
+  margin: 0 0 22px;
+}
+
+.login-formulario button {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .login-split {
+    grid-template-columns: 1fr;
+  }
+
+  .login-marca {
+    padding: 32px 24px;
+    text-align: center;
+    align-items: center;
+  }
+
+  .login-marca p {
+    max-width: none;
+  }
+}
+
+/* Link a la nota de envío imprimible, debajo del botón de confirmar */
+.link-factura {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  color: var(--color-primario);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link-factura:hover {
+  color: var(--color-primario-oscuro);
+}
+
+/* ============================================================
+   Factura / nota de envío — documento imprimible
+   (mismo estilo "clásico" elegido: marca + folio arriba, datos
+   del cliente, detalle de productos y de empaques apilados)
+   ============================================================ */
+
+.factura-barra {
+  max-width: 720px;
+  margin: 20px auto 0;
+  padding: 0 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.factura-barra a,
+.factura-barra button {
+  font-size: 0.85rem;
+}
+
+.factura-hoja {
+  max-width: 720px;
+  margin: 16px auto 40px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 32px;
+}
+
+.factura-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--color-primario);
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+}
+
+.factura-cabecera .factura-marca strong {
+  font-size: 1.2rem;
+  color: var(--color-primario-oscuro);
+}
+
+.factura-cabecera .factura-marca p {
+  margin: 2px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 0.8rem;
+}
+
+.factura-cabecera .factura-folio {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+.factura-cabecera .factura-folio span {
+  display: block;
+  font-weight: 700;
+  color: var(--color-texto);
+  font-size: 1rem;
+}
+
+.factura-datos-cliente {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 20px;
+  background: var(--color-fondo);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+}
+
+.factura-datos-cliente .etiqueta {
+  color: var(--color-texto-suave);
+  margin-right: 4px;
+}
+
+.factura-hoja h2 {
+  font-size: 0.9rem;
+  margin: 20px 0 8px;
+  color: var(--color-primario-oscuro);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.factura-hoja table th {
+  border-bottom: 1px solid var(--color-borde);
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}
+
+.factura-hoja table td {
+  border-bottom: 1px solid var(--color-fondo);
+}
+
+.factura-firma {
+  margin-top: 32px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+.factura-firma div {
+  border-top: 1px solid var(--color-borde);
+  width: 180px;
+  padding-top: 6px;
+  text-align: center;
+}
+
+@media print {
+  .factura-barra,
+  header.app-header {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .factura-hoja {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    max-width: none;
+  }
+}
+
+/* ============================================================
+   Historial — buscador + filas clicables (en vez de tabla)
+   ============================================================ */
+
+.historial-buscador {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.historial-buscador input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  font-size: 0.95rem;
+}
+
+.historial-buscador button {
+  border-radius: 14px;
+  padding: 12px 24px;
+  white-space: nowrap;
+}
+
+.historial-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historial-fila {
+  background: var(--color-primario);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 16px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.historial-fila:hover {
+  background: var(--color-primario-oscuro);
+}
+
+.historial-fila .historial-cliente {
+  font-weight: 700;
+}
+
+.historial-fila .historial-descripcion {
+  opacity: 0.9;
+}
+
+.historial-fila .historial-codigo {
+  font-weight: 700;
+  text-align: right;
+}
+
+.historial-lista .lista-vacio {
+  color: var(--color-texto-suave);
+  text-align: center;
+  padding: 24px 12px;
+}
+
+@media (max-width: 640px) {
+  .historial-fila {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .historial-fila .historial-codigo {
+    text-align: left;
+  }
+}
+
+/* ============================================================
+   Modal de la nota de envío (historial.html)
+   Reutiliza .factura-hoja y compañía tal cual están definidos
+   arriba para factura.html — mismo diseño, ahora adentro de un
+   modal en vez de una página aparte.
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(51, 43, 58, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-factura {
+  background: var(--color-fondo);
+  border-radius: var(--radio);
+  width: 100%;
+  max-width: 760px;
+}
+
+.modal-factura-barra {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px 0;
+}
+
+.modal-factura-barra .btn-cerrar {
+  background: transparent;
+  color: var(--color-texto-suave);
+  border: 1px solid var(--color-borde);
+}
+
+.modal-factura-barra .btn-cerrar:hover {
+  background: transparent;
+  color: var(--color-texto);
+}
+
+.modal-factura .factura-hoja {
+  margin: 12px auto 24px;
 }

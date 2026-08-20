@@ -15,10 +15,10 @@
 --    <-> empaque, porque el mismo tipo de empaque se usa para
 --    productos distintos), pero cuelgan del mismo envío y se
 --    pueden consultar en conjunto.
---  - Cada envío genera automáticamente dos números de folio
---    correlativos al crearse: uno para la "factura por producto"
---    (formato E000001) y otro para la "factura por empaque"
---    (formato P000001). Ambas son documentos imprimibles.
+--  - Cada envío genera automáticamente un número de folio
+--    correlativo al crearse (formato E000001, columna
+--    numero_envio). Es un solo documento imprimible (la nota de
+--    envío) con el detalle de productos y de empaques juntos.
 --  - La ciudad de destino y el nombre de quien recibe se cargan
 --    en cada envío (no en el cliente), porque pueden variar
 --    aunque el cliente sea el mismo (ej. sucursales distintas).
@@ -30,18 +30,24 @@
 -- ============================================================
 
 -- ------------------------------------------------------------
--- Secuencias para los números de folio de las facturas
+-- Secuencia para el número de folio del envío
 -- ------------------------------------------------------------
-create sequence if not exists seq_factura_producto start 1;
-create sequence if not exists seq_factura_empaque   start 1;
+create sequence if not exists seq_envio start 1;
 
 -- ------------------------------------------------------------
 -- Clientes / destinatarios
 -- ------------------------------------------------------------
+-- direccion y ciudad son los datos "de base" del cliente: se cargan al
+-- registrarlo y sirven para autocompletar el formulario de envío. En
+-- "Realizar envío" se pueden editar sin que eso modifique este registro
+-- (ahí solo se usan para imprimir la nota de envío, salvo ciudad_destino
+-- en la tabla envios, que sí se guarda por ser dato propio de cada envío).
 create table clientes (
   id         bigint generated always as identity primary key,
   nombre     text not null,          -- empresa o persona
   telefono   text,
+  direccion  text,
+  ciudad     text,
   creado_en  timestamptz not null default now()
 );
 
@@ -70,33 +76,31 @@ create table tipos_empaque (
 -- Envíos (cabecera de cada salida)
 -- ------------------------------------------------------------
 create table envios (
-  id                       bigint generated always as identity primary key,
-  cliente_id               bigint not null references clientes (id),
-  ciudad_destino           text not null,
-  nombre_receptor          text not null,   -- se tipea a mano en cada envío
-  fecha                    date not null default current_date,
-  numero_factura_producto  text not null unique,
-  numero_factura_empaque   text not null unique,
-  observaciones            text,
-  creado_en                timestamptz not null default now()
+  id                bigint generated always as identity primary key,
+  cliente_id        bigint not null references clientes (id),
+  ciudad_destino    text not null,
+  nombre_receptor   text not null,   -- se tipea a mano en cada envío
+  fecha             date not null default current_date,
+  numero_envio      text not null unique,   -- folio único, formato E000001
+  observaciones     text,
+  creado_en         timestamptz not null default now()
 );
 
 create index idx_envios_cliente_id on envios (cliente_id);
 
--- Autogenera los dos números de folio al crear un envío
-create or replace function fn_generar_numeros_factura()
+-- Autogenera el número de folio al crear un envío
+create or replace function fn_generar_numero_envio()
 returns trigger as $$
 begin
-  new.numero_factura_producto := 'E' || lpad(nextval('seq_factura_producto')::text, 6, '0');
-  new.numero_factura_empaque  := 'P' || lpad(nextval('seq_factura_empaque')::text, 6, '0');
+  new.numero_envio := 'E' || lpad(nextval('seq_envio')::text, 6, '0');
   return new;
 end;
 $$ language plpgsql;
 
-create trigger trg_envios_numeros_factura
+create trigger trg_envios_numero_envio
   before insert on envios
   for each row
-  execute function fn_generar_numeros_factura();
+  execute function fn_generar_numero_envio();
 
 -- ------------------------------------------------------------
 -- Detalle de productos por envío

@@ -12,6 +12,7 @@
     <nav>
       <a href="index.html">Inicio</a>
       <a href="productos.html">Productos</a>
+      <a href="clientes.html">Clientes</a>
       <a href="empaques.html">Empaques</a>
       <a href="realizar-envio.html">Realizar envío</a>
       <a href="historial.html" class="activo">Historial</a>
@@ -21,27 +22,89 @@
   <main>
     <div class="tarjeta">
       <h1>Historial de movimientos</h1>
-      <table id="tabla-historial">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Tipo de empaque</th>
-            <th>Cant. empaques</th>
-            <th>Observaciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Se completa dinámicamente desde js/historial.js -->
-        </tbody>
-      </table>
+
+      <div class="historial-buscador">
+        <input type="text" id="buscador-historial" placeholder="Buscar por cliente, código o producto..." />
+        <button type="button" id="btn-buscar-historial">Buscar</button>
+      </div>
+
+      <div class="historial-lista" id="historial-lista">
+        <!-- Se completa dinámicamente desde js/historial.js -->
+        <p class="lista-vacio">Todavía no hay envíos registrados.</p>
+      </div>
     </div>
   </main>
 
+  <!-- Modal con la nota de envío (mismo diseño que factura.html) -->
+  <div class="modal-overlay" id="modal-factura" hidden>
+    <div class="modal-factura">
+      <div class="modal-factura-barra">
+        <button type="button" id="btn-descargar-pdf">Descargar PDF</button>
+        <button type="button" id="btn-cerrar-modal" class="btn-cerrar">✕ Cerrar</button>
+      </div>
+
+      <div class="factura-hoja" id="factura-modal-contenido">
+        <div class="factura-cabecera">
+          <div class="factura-marca">
+            <strong>Envíos Multicolor</strong>
+            <p>Nota de envío</p>
+          </div>
+          <div class="factura-folio">
+            <span id="factura-numero">E000000</span>
+            Código de envío
+          </div>
+        </div>
+
+        <div class="factura-datos-cliente">
+          <div><span class="etiqueta">Cliente:</span><span id="factura-cliente">—</span></div>
+          <div><span class="etiqueta">Fecha:</span><span id="factura-fecha">—</span></div>
+          <div><span class="etiqueta">Recibe:</span><span id="factura-receptor">—</span></div>
+          <div><span class="etiqueta">Ciudad:</span><span id="factura-ciudad">—</span></div>
+          <div><span class="etiqueta">Teléfono:</span><span id="factura-telefono">—</span></div>
+          <div><span class="etiqueta">Dirección:</span><span id="factura-direccion">—</span></div>
+        </div>
+
+        <h2>Detalle de productos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody id="factura-tabla-productos">
+            <!-- Se completa dinámicamente al abrir el modal -->
+          </tbody>
+        </table>
+
+        <h2>Detalle de empaques</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de empaque</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody id="factura-tabla-empaques">
+            <!-- Se completa dinámicamente al abrir el modal -->
+          </tbody>
+        </table>
+
+        <p id="factura-observaciones" hidden></p>
+
+        <div class="factura-firma">
+          <div>Firma quien entrega</div>
+          <div>Firma quien recibe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="js/supabaseClient.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/factura.js"></script>
   <script src="js/historial.js"></script>
 </body>
 </html>

@@ -77,14 +77,18 @@ supabase/migracion_folio_unico_y_ciudad.sql  Migración puntual ya usada en el p
       login.html verifican que haya sesión iniciada, si no la hay
       redirigen a login.html. Cada página protegida tiene un link
       "Cerrar sesión" en el menú.
-- [ ] Falta crear el usuario administrador en Supabase Auth
-      (Authentication → Users → Add user). Hasta que no exista ese
-      usuario, el login va a fallar siempre y las páginas van a
-      redirigir en bucle a login.html. No habrá alta de más usuarios
-      por ahora — un solo administrador.
-- [ ] Implementación de la lógica real de cada página (por ahora los
-      `js/*.js` son funciones de acceso a datos con TODOs).
-- [ ] Definición del hosting final.
+- [x] Usuario administrador creado en Supabase Auth y login funcionando
+      en producción (`https://volumedweb.github.io/registro_multicolor/`).
+      No habrá alta de más usuarios por ahora — un solo administrador.
+- [x] Implementación de la lógica real de cada página: `js/clientes.js`,
+      `js/productos.js`, `js/empaques.js`, `js/salidas.js`,
+      `js/factura.js` y `js/historial.js` ya hacen las llamadas reales a
+      Supabase (antes eran funciones con TODOs). `productos.js` genera
+      un `codigo` (SKU) automático porque el formulario de
+      productos.html no lo pide a mano. `realizar-envio.js` usa el
+      nombre del cliente también como `nombre_receptor` del envío, ya
+      que el formulario no tiene un campo separado para "quien recibe".
+- [x] Hosting: GitHub Pages, rama `main`, carpeta raíz.
 
 ## Notas sobre el proyecto real de Supabase
 

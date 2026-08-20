@@ -5,14 +5,6 @@
 // cliente + detalle de productos y de empaques) y completa el
 // documento imprimible.
 //
-// TODO: implementar la consulta real a Supabase una vez conectado.
-// obtenerEnvioCompleto() debería resolver algo así:
-// {
-//   numero_envio, fecha, ciudad_destino, nombre_receptor, observaciones,
-//   cliente: { nombre, telefono, direccion },
-//   productos: [{ nombre, cantidad }, ...],
-//   empaques:  [{ nombre, cantidad }, ...],
-// }
 // telefono y direccion del cliente son solo para imprimir esta nota —
 // no se vuelven a guardar en ningún lado desde acá.
 //
@@ -46,12 +38,60 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function obtenerEnvioCompleto(envioId) {
-  // TODO: traer de Supabase:
-  //  - envios (numero_envio, fecha, ciudad_destino, nombre_receptor,
-  //    observaciones) por id
-  //  - clientes (nombre, telefono, direccion) por envios.cliente_id
-  //  - envio_productos + productos (nombre) por envio_id
-  //  - envio_empaques + tipos_empaque (nombre) por envio_id
+  const { data: envio, error: errorEnvio } = await supabaseClient
+    .from("envios")
+    .select(
+      "numero_envio, fecha, ciudad_destino, nombre_receptor, observaciones, clientes(nombre, telefono, direccion)"
+    )
+    .eq("id", envioId)
+    .single();
+
+  if (errorEnvio || !envio) {
+    mostrarMensaje(
+      "No se pudo cargar el envío: " + (errorEnvio ? errorEnvio.message : "no encontrado"),
+      "error"
+    );
+    return null;
+  }
+
+  const { data: productos, error: errorProductos } = await supabaseClient
+    .from("envio_productos")
+    .select("cantidad, productos(nombre)")
+    .eq("envio_id", envioId);
+
+  if (errorProductos) {
+    mostrarMensaje("No se pudo cargar el detalle de productos: " + errorProductos.message, "error");
+  }
+
+  const { data: empaques, error: errorEmpaques } = await supabaseClient
+    .from("envio_empaques")
+    .select("cantidad, tipos_empaque(nombre)")
+    .eq("envio_id", envioId);
+
+  if (errorEmpaques) {
+    mostrarMensaje("No se pudo cargar el detalle de empaques: " + errorEmpaques.message, "error");
+  }
+
+  return {
+    numero_envio: envio.numero_envio,
+    fecha: envio.fecha,
+    ciudad_destino: envio.ciudad_destino,
+    nombre_receptor: envio.nombre_receptor,
+    observaciones: envio.observaciones,
+    cliente: {
+      nombre: envio.clientes ? envio.clientes.nombre : "—",
+      telefono: envio.clientes ? envio.clientes.telefono : null,
+      direccion: envio.clientes ? envio.clientes.direccion : null,
+    },
+    productos: (productos || []).map((p) => ({
+      nombre: p.productos ? p.productos.nombre : "—",
+      cantidad: p.cantidad,
+    })),
+    empaques: (empaques || []).map((e) => ({
+      nombre: e.tipos_empaque ? e.tipos_empaque.nombre : "—",
+      cantidad: e.cantidad,
+    })),
+  };
 }
 
 function pintarFactura(envio) {

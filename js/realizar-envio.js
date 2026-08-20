@@ -286,6 +286,11 @@ async function manejarEnvioFormulario(evento) {
   const datosSalida = {
     cliente_id: clienteId,
     ciudad_destino: document.getElementById("ciudad-destino").value,
+    // No hay un campo separado para "quien recibe" en este formulario;
+    // por ahora se usa el mismo nombre del cliente (la tabla "envios"
+    // exige este dato). Si más adelante hace falta distinguir a un
+    // receptor distinto del cliente, se puede agregar un campo nuevo acá.
+    nombre_receptor: document.getElementById("nombre-cliente").value,
     fecha: document.getElementById("fecha-envio").value,
     observaciones: document.getElementById("observaciones").value,
     productos: productosEnEnvio,

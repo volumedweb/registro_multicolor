@@ -8,9 +8,6 @@
 // Reutiliza pintarFactura() / pintarFilas() / obtenerEnvioCompleto()
 // de js/factura.js (mismo markup, mismos ids, adentro del modal en
 // vez de una página aparte) para no duplicar esa lógica.
-//
-// TODO: implementar junto con las tablas `envios`, `envio_productos`,
-// `envio_empaques` y `clientes` en Supabase (ver supabase/schema.sql).
 
 let historialCache = [];
 
@@ -46,10 +43,36 @@ async function cargarHistorial() {
 }
 
 async function listarHistorial(filtros = {}) {
-  // TODO: SELECT envios + JOIN clientes (nombre) + un resumen del
-  // detalle (ej. "3 productos, 2 empaques"), ORDER BY fecha DESC.
-  // Cada fila esperada: { id, numero_envio, cliente_nombre, descripcion }
-  // aplicando los filtros recibidos (texto de búsqueda, fecha, etc.)
+  const { data: envios, error } = await supabaseClient
+    .from("envios")
+    .select(
+      "id, numero_envio, creado_en, clientes(nombre), envio_productos(cantidad), envio_empaques(cantidad)"
+    )
+    .order("creado_en", { ascending: false });
+
+  if (error) {
+    mostrarMensaje("No se pudo cargar el historial: " + error.message, "error");
+    return [];
+  }
+
+  return (envios || []).map((envio) => {
+    const totalProductos = (envio.envio_productos || []).length;
+    const totalEmpaques = (envio.envio_empaques || []).length;
+    const partes = [];
+    if (totalProductos > 0) {
+      partes.push(`${totalProductos} producto${totalProductos === 1 ? "" : "s"}`);
+    }
+    if (totalEmpaques > 0) {
+      partes.push(`${totalEmpaques} empaque${totalEmpaques === 1 ? "" : "s"}`);
+    }
+
+    return {
+      id: envio.id,
+      numero_envio: envio.numero_envio,
+      cliente_nombre: envio.clientes ? envio.clientes.nombre : "—",
+      descripcion: partes.join(" · ") || "Sin detalle",
+    };
+  });
 }
 
 function filtrarHistorial() {

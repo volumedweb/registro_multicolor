@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Realizar envío — Envíos Multicolor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <strong>Envíos Multicolor</strong>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="productos.html">Productos</a>
+      <a href="empaques.html">Empaques</a>
+      <a href="realizar-envio.html" class="activo">Realizar envío</a>
+      <a href="historial.html">Historial</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <h1>Realizar envío</h1>
+
+      <form id="form-envio">
+        <!-- Datos generales del envío -->
+        <div class="envio-cabecera">
+          <div class="campo-envio">
+            <label for="nombre-cliente">Nombre del cliente</label>
+            <input type="text" id="nombre-cliente" name="nombre_cliente" placeholder="Ej: Distribuidora Sol" required />
+          </div>
+          <div class="campo-envio">
+            <label for="codigo-envio">Código de envío</label>
+            <input type="text" id="codigo-envio" name="codigo_envio" placeholder="Se genera al confirmar" disabled />
+          </div>
+          <div class="campo-envio">
+            <label for="fecha-envio">Fecha</label>
+            <input type="date" id="fecha-envio" name="fecha" required />
+          </div>
+          <div class="campo-envio">
+            <label for="telefono-cliente">Teléfono</label>
+            <input type="tel" id="telefono-cliente" name="telefono" placeholder="Ej: 700 00000" />
+          </div>
+          <div class="campo-envio">
+            <label for="direccion-cliente">Dirección</label>
+            <input type="text" id="direccion-cliente" name="direccion" placeholder="Ej: Av. Siempre Viva 123" />
+          </div>
+          <div class="campo-envio">
+            <label for="ciudad-destino">Ciudad</label>
+            <input type="text" id="ciudad-destino" name="ciudad_destino" placeholder="Ej: La Paz" required />
+          </div>
+        </div>
+
+        <!-- Productos y empaques -->
+        <div class="envio-columnas">
+          <!-- Envío por producto -->
+          <section class="panel-envio panel-productos">
+            <div class="panel-titulo">
+              <span>Envío por producto</span>
+              <button type="button" class="btn-agregar" id="btn-agregar-producto">Agregar</button>
+            </div>
+
+            <div class="fila-entrada">
+              <select id="select-producto" name="producto_id">
+                <!-- Se completa dinámicamente desde js/productos.js -->
+                <option value="">Nombre producto</option>
+              </select>
+              <input type="number" id="input-cantidad-producto" min="1" placeholder="Cantidad" />
+            </div>
+
+            <div class="lista-agregados" id="lista-productos">
+              <p class="lista-vacio">Todavía no agregaste productos a este envío.</p>
+            </div>
+          </section>
+
+          <!-- Envío por empaque -->
+          <section class="panel-envio panel-empaques">
+            <div class="panel-titulo">
+              <span>Envío por empaque</span>
+              <button type="button" class="btn-agregar" id="btn-agregar-empaque">Agregar</button>
+            </div>
+
+            <div class="fila-entrada">
+              <select id="select-empaque" name="tipo_empaque_id">
+                <!-- Se completa dinámicamente desde js/empaques.js -->
+                <option value="">Tipo de empaque</option>
+              </select>
+              <input type="number" id="input-cantidad-empaque" min="1" placeholder="Cantidad" />
+            </div>
+
+            <div class="lista-agregados" id="lista-empaques">
+              <p class="lista-vacio">Todavía no agregaste empaques a este envío.</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="tarjeta" style="margin-top: 20px; margin-bottom: 0;">
+          <div class="campo">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="envio-acciones">
+          <button type="submit">Realizar envío</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/productos.js"></script>
+  <script src="js/empaques.js"></script>
+  <script src="js/realizar-envio.js"></script>
+</body>
+</html>

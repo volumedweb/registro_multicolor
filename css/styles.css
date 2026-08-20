@@ -105,3 +105,165 @@ button {
 button:hover {
   background: var(--color-primario-oscuro);
 }
+
+/* ============================================================
+   Realizar envío — franja de datos + columnas producto/empaque
+   (misma paleta que el resto de la app: superficie blanca,
+   bordes grises, azul primario)
+   ============================================================ */
+
+.envio-cabecera {
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.envio-cabecera .campo-envio {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 0;
+}
+
+.envio-cabecera .campo-envio label {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px 0;
+}
+
+.envio-cabecera .campo-envio input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--color-texto);
+  padding: 2px 12px 8px;
+  font-size: 0.95rem;
+}
+
+.envio-cabecera .campo-envio input:focus {
+  outline: none;
+}
+
+.envio-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.panel-envio {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 16px;
+}
+
+.panel-envio .panel-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panel-envio .panel-titulo span {
+  background: var(--color-primario);
+  color: #fff;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.panel-envio .btn-agregar {
+  background: var(--color-primario);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.panel-envio .btn-agregar:hover {
+  background: var(--color-primario-oscuro);
+}
+
+.panel-envio .fila-entrada {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.panel-envio .fila-entrada select,
+.panel-envio .fila-entrada input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.lista-agregados {
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  min-height: 180px;
+  padding: 10px;
+}
+
+.lista-agregados .fila-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  align-items: center;
+  color: var(--color-texto);
+}
+
+.lista-agregados .fila-item button {
+  background: transparent;
+  border: none;
+  color: var(--color-alerta);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 1rem;
+}
+
+.lista-agregados .lista-vacio {
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 24px 12px;
+}
+
+.envio-acciones {
+  margin-top: 20px;
+}
+
+.envio-acciones button {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .envio-cabecera,
+  .envio-columnas {
+    grid-template-columns: 1fr;
+  }
+}

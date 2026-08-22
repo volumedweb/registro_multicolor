@@ -2,6 +2,10 @@
 // Funciones utilitarias comunes
 // ============================================================
 
+// ---------- SECCIÓN: Formato de fechas ----------
+// Controla: cómo se muestran las fechas en toda la app (dd/mm/aaaa,
+// con hora solo cuando el dato original la trae).
+
 /** Formatea una fecha a formato local legible (dd/mm/aaaa[ hh:mm]). */
 function formatearFecha(fechaIso) {
   // "envios.fecha" es una columna `date` (sin hora), ej. "2026-08-20".
@@ -25,6 +29,11 @@ function formatearFecha(fechaIso) {
   });
 }
 
+// ---------- SECCIÓN: Mensajes al usuario ----------
+// Controla: el único punto por donde se avisan errores o confirmaciones
+// en toda la app (todos los demás archivos llaman a esta función en vez
+// de usar alert()/console.log() directamente).
+
 /** Muestra un mensaje simple de éxito o error en pantalla. */
 function mostrarMensaje(texto, tipo = "exito") {
   console.log(`[${tipo}] ${texto}`);
@@ -32,6 +41,10 @@ function mostrarMensaje(texto, tipo = "exito") {
   // defina el diseño final de la interfaz.
   alert(texto);
 }
+
+// ---------- SECCIÓN: Validaciones de formulario ----------
+// Controla: reglas de validación compartidas por los formularios que
+// piden cantidades (productos, empaques) antes de agregarlas a un envío.
 
 /** Valida que un valor numérico sea mayor a cero. */
 function esCantidadValida(valor) {

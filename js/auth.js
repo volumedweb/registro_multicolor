@@ -20,8 +20,17 @@
 // "hidden" (puesto a mano en el HTML de cada página) para no mostrar
 // nada hasta saber si corresponde mostrarlo o mandar al login.
 
+// ---------- SECCIÓN: Estado global del perfil logueado ----------
+// Controla: guarda el perfil (rol, nombre, activo) de quien inició
+// sesión para que el resto de la página lo pueda leer vía
+// `window.perfilActual` sin volver a consultarlo.
 let perfilActual = null;
 
+// ---------- SECCIÓN: Guardia de acceso (se ejecuta al cargar la página) ----------
+// Controla: si no hay sesión, o el perfil no existe/está desactivado,
+// manda al login. Si el rol no coincide con el tipo de página
+// (veedor vs. resto), redirige a donde sí corresponde. Recién si todo
+// está en orden, muestra el <body> (que arranca oculto con `hidden`).
 (async function protegerPagina() {
   const { data } = await supabaseClient.auth.getSession();
 
@@ -63,6 +72,10 @@ let perfilActual = null;
   document.body.hidden = false;
 })();
 
+// ---------- SECCIÓN: Etiqueta visual del rol ----------
+// Controla: el texto y el badge que muestran, junto al nombre de la
+// app, con qué rol se está trabajando (Dueño / Administrador / Veedor).
+
 /** Texto legible para cada valor de "perfiles.rol". */
 function nombreRol(rol) {
   if (rol === "dueno") return "Dueño";
@@ -82,6 +95,10 @@ function mostrarBadgeRol(perfil) {
   badge.textContent = nombreRol(perfil.rol);
   marca.insertAdjacentElement("afterend", badge);
 }
+
+// ---------- SECCIÓN: Cerrar sesión ----------
+// Controla: cerrar la sesión de Supabase y volver al login. Se
+// engancha al link "Cerrar sesión" del menú (ver css/styles.css).
 
 // Cierra la sesión y vuelve al login. Se usa desde el link
 // "Cerrar sesión" del menú de navegación (ver css/styles.css).

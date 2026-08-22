@@ -9,8 +9,15 @@
 // de js/factura.js (mismo markup, mismos ids, adentro del modal en
 // vez de una página aparte) para no duplicar esa lógica.
 
+// ---------- SECCIÓN: Estado ----------
+// Controla: guarda en memoria la última lista de envíos traída de la
+// base, para poder filtrarla en el buscador sin volver a consultar
+// Supabase cada vez que se tipea.
 let historialCache = [];
 
+// ---------- SECCIÓN: Arranque de la página ----------
+// Controla: carga el historial inicial y engancha todos los eventos
+// de la pantalla (buscador, cerrar modal, descargar PDF).
 document.addEventListener("DOMContentLoaded", () => {
   cargarHistorial();
 
@@ -35,13 +42,18 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", descargarFacturaPdf);
 });
 
-// ---------- Listado ----------
+// ---------- SECCIÓN: Listado ----------
+// Controla: trae los envíos desde Supabase (con conteo de productos y
+// empaques ya armado) y los dibuja como filas clicables.
 
+/** Trae los envíos y refresca la lista en pantalla. */
 async function cargarHistorial() {
   historialCache = (await listarHistorial()) || [];
   pintarHistorial(historialCache);
 }
 
+/** Consulta Supabase y arma, por cada envío, un resumen legible
+ * ("3 productos · 1 empaque") a partir de sus detalles relacionados. */
 async function listarHistorial(filtros = {}) {
   const { data: envios, error } = await supabaseClient
     .from("envios")
@@ -75,6 +87,8 @@ async function listarHistorial(filtros = {}) {
   });
 }
 
+/** Filtra `historialCache` en memoria por lo tipeado en el buscador
+ * (cliente, código de envío o descripción) y repinta la lista. */
 function filtrarHistorial() {
   const texto = document
     .getElementById("buscador-historial")
@@ -95,6 +109,8 @@ function filtrarHistorial() {
   pintarHistorial(filtrados);
 }
 
+/** Dibuja la lista de filas de envíos (o el mensaje de "vacío") y les
+ * engancha el click para abrir el detalle en el modal. */
 function pintarHistorial(items) {
   const contenedor = document.getElementById("historial-lista");
 
@@ -119,8 +135,11 @@ function pintarHistorial(items) {
   });
 }
 
-// ---------- Modal con la nota de envío ----------
+// ---------- SECCIÓN: Modal con la nota de envío ----------
+// Controla: abrir/cerrar el modal que muestra el detalle completo de
+// un envío, reutilizando el mismo markup y funciones de js/factura.js.
 
+/** Carga el detalle completo del envío y lo pinta adentro del modal. */
 async function abrirModalFactura(envioId) {
   const envio = await obtenerEnvioCompleto(envioId); // definida en js/factura.js
   if (!envio) {
@@ -131,11 +150,14 @@ async function abrirModalFactura(envioId) {
   document.getElementById("modal-factura").hidden = false;
 }
 
+/** Oculta el modal de detalle. */
 function cerrarModalFactura() {
   document.getElementById("modal-factura").hidden = true;
 }
 
-// ---------- Descarga en PDF (tamaño carta) ----------
+// ---------- SECCIÓN: Descarga en PDF (tamaño carta) ----------
+// Controla: exporta el contenido del modal a un PDF descargable con
+// el nombre "nota-envio-<numero>.pdf", usando la librería html2pdf.
 
 async function descargarFacturaPdf() {
   const elemento = document.getElementById("factura-modal-contenido");

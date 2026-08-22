@@ -4,6 +4,11 @@
 // Responsable de: alta/edición de los tipos de empaque
 // disponibles (baldes, cajas, paquetes 4x1, otros).
 
+// ---------- SECCIÓN: Acceso a datos (Supabase) ----------
+// Controla: leer y crear filas en la tabla "tipos_empaque". No toca el
+// DOM; estas funciones las reutilizan tanto empaques.html como
+// realizar-envio.html.
+
 async function listarTiposEmpaque() {
   const { data, error } = await supabaseClient
     .from("tipos_empaque")
@@ -31,7 +36,8 @@ async function crearTipoEmpaque(datosEmpaque) {
   return data;
 }
 
-// ---------- UI: alta y listado en empaques.html ----------
+// ---------- SECCIÓN: Interfaz — alta y listado en empaques.html ----------
+// Controla: la tabla de tipos de empaque y el formulario de alta.
 // Este script también se carga en realizar-envio.html (para reutilizar
 // listarTiposEmpaque), donde no existe "form-empaque" — por eso el
 // bloque de abajo se sale temprano si no encuentra ese formulario.
@@ -44,11 +50,13 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", manejarAltaEmpaque);
 });
 
+/** Trae los tipos de empaque de la base y refresca la tabla en pantalla. */
 async function cargarTablaEmpaques() {
   const tipos = await listarTiposEmpaque();
   pintarTablaEmpaques(tipos);
 }
 
+/** Dibuja las filas de la tabla de tipos de empaque (o el mensaje de "vacío"). */
 function pintarTablaEmpaques(tipos) {
   const tbody = document.querySelector("#tabla-empaques tbody");
   if (!tipos || tipos.length === 0) {
@@ -58,6 +66,7 @@ function pintarTablaEmpaques(tipos) {
   tbody.innerHTML = tipos.map((t) => `<tr><td>${t.nombre}</td></tr>`).join("");
 }
 
+/** Valida y guarda el formulario de alta de tipo de empaque. */
 async function manejarAltaEmpaque(evento) {
   evento.preventDefault();
 

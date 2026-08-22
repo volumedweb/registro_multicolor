@@ -14,6 +14,10 @@
 // solo aplica a esta página standalone, con botón de imprimir y
 // ?envio_id en la URL) se sale temprano si no encuentra "btn-imprimir".
 
+// ---------- SECCIÓN: Arranque de la página (solo factura.html standalone) ----------
+// Controla: lee ?envio_id de la URL, trae el envío y lo pinta. Se sale
+// temprano si el script se cargó desde historial.html (no hay botón
+// "btn-imprimir" en ese caso, el pintado lo dispara historial.js).
 document.addEventListener("DOMContentLoaded", async () => {
   const btnImprimir = document.getElementById("btn-imprimir");
   if (!btnImprimir) return; // se cargó desde historial.html, no desde factura.html
@@ -37,6 +41,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   pintarFactura(envio);
 });
 
+// ---------- SECCIÓN: Acceso a datos (Supabase) ----------
+// Controla: trae del backend la cabecera del envío junto con sus dos
+// detalles independientes (productos y empaques) y los combina en un
+// solo objeto listo para pintar. La usan tanto factura.html como el
+// modal de historial.html.
+
+/** Trae cabecera + cliente + detalle de productos y de empaques de un
+ * envío, combinados en un solo objeto para pintar. */
 async function obtenerEnvioCompleto(envioId) {
   const { data: envio, error: errorEnvio } = await supabaseClient
     .from("envios")
@@ -94,6 +106,14 @@ async function obtenerEnvioCompleto(envioId) {
   };
 }
 
+// ---------- SECCIÓN: Pintado del documento ----------
+// Controla: rellena todos los campos del markup de la nota de envío
+// (cliente, fecha, receptor, ciudad, tablas de detalle, observaciones).
+// Estas dos funciones son las que reutiliza js/historial.js dentro del
+// modal — mismo markup, mismos ids.
+
+/** Completa todos los campos de texto y las dos tablas de detalle de
+ * la nota de envío a partir del objeto armado por obtenerEnvioCompleto(). */
 function pintarFactura(envio) {
   document.getElementById("factura-numero").textContent = envio.numero_envio;
   document.getElementById("factura-cliente").textContent = envio.cliente.nombre;
@@ -113,6 +133,9 @@ function pintarFactura(envio) {
   }
 }
 
+/** Dibuja las filas de una tabla de detalle (productos o empaques),
+ * o el mensaje de "vacío" si no hay items. Genérica: se usa para
+ * ambas tablas. */
 function pintarFilas(tbodyId, items, textoVacio) {
   const tbody = document.getElementById(tbodyId);
   if (!items || items.length === 0) {

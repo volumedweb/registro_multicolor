@@ -6,6 +6,12 @@
 // detalles independientes que cuelgan de la misma cabecera,
 // sin mezclar la información propia de cada aspecto.
 
+// ---------- SECCIÓN: Registro del envío (cabecera + detalle) ----------
+// Controla: crea la fila en "envios" (cabecera) y, en dos inserts
+// separados, sus líneas de "envio_productos" y "envio_empaques" —
+// manteniendo producto/stock y tipo de empaque como aspectos
+// independientes que se consultan juntos por compartir el mismo
+// envio_id.
 async function registrarSalida(datosSalida) {
   // datosSalida esperado:
   // {
@@ -17,6 +23,7 @@ async function registrarSalida(datosSalida) {
   //     no se guardan en la base de datos.
   // }
 
+  // -- Paso 1: cabecera del envío (cliente, ciudad, fecha, etc.) --
   const { data: envio, error: errorEnvio } = await supabaseClient
     .from("envios")
     .insert({
@@ -36,6 +43,7 @@ async function registrarSalida(datosSalida) {
 
   const envioId = envio.id;
 
+  // -- Paso 2: detalle de productos (aspecto "producto y stock") --
   if (datosSalida.productos && datosSalida.productos.length > 0) {
     const filasProductos = datosSalida.productos.map((p) => ({
       envio_id: envioId,
@@ -54,6 +62,7 @@ async function registrarSalida(datosSalida) {
     }
   }
 
+  // -- Paso 3: detalle de empaques (aspecto "tipo de empaque") --
   if (datosSalida.empaques && datosSalida.empaques.length > 0) {
     const filasEmpaques = datosSalida.empaques.map((e) => ({
       envio_id: envioId,

@@ -9,6 +9,11 @@
 // genera automáticamente a partir del nombre para no complicar la
 // pantalla con un campo que el usuario no necesita completar a mano.
 
+// ---------- SECCIÓN: Acceso a datos (Supabase) ----------
+// Controla: leer, crear productos y actualizar su stock en la tabla
+// "productos". No toca el DOM; estas funciones las reutilizan tanto
+// productos.html como realizar-envio.html.
+
 async function listarProductos() {
   const { data, error } = await supabaseClient
     .from("productos")
@@ -56,6 +61,10 @@ async function actualizarStock(productoId, nuevaCantidad) {
   return data;
 }
 
+// ---------- SECCIÓN: Generación de SKU ----------
+// Controla: arma el código interno (SKU) automáticamente para que el
+// usuario no tenga que inventarlo a mano en el formulario.
+
 /** Arma un código interno único a partir del nombre, para el `codigo`
  * (SKU) que exige la tabla `productos` pero que el formulario de
  * productos.html no pide de forma manual. */
@@ -71,7 +80,8 @@ function generarCodigoProducto(nombre) {
   return `${base}-${sufijo}`;
 }
 
-// ---------- UI: alta y listado en productos.html ----------
+// ---------- SECCIÓN: Interfaz — alta y listado en productos.html ----------
+// Controla: la tabla de productos (con su stock) y el formulario de alta.
 // Este script también se carga en realizar-envio.html (para reutilizar
 // listarProductos), donde no existe "form-producto" — por eso el bloque
 // de abajo se sale temprano si no encuentra ese formulario.
@@ -84,11 +94,13 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", manejarAltaProducto);
 });
 
+/** Trae los productos de la base y refresca la tabla en pantalla. */
 async function cargarTablaProductos() {
   const productos = await listarProductos();
   pintarTablaProductos(productos);
 }
 
+/** Dibuja las filas de la tabla de productos con su stock (o el mensaje de "vacío"). */
 function pintarTablaProductos(productos) {
   const tbody = document.querySelector("#tabla-productos tbody");
   if (!productos || productos.length === 0) {
@@ -100,6 +112,7 @@ function pintarTablaProductos(productos) {
     .join("");
 }
 
+/** Valida y guarda el formulario de alta de producto (nombre + stock inicial). */
 async function manejarAltaProducto(evento) {
   evento.preventDefault();
 

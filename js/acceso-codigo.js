@@ -10,6 +10,9 @@
 // redirige a la app completa (administrador) o a veedor.html
 // (veedor).
 
+// ---------- SECCIÓN: Arranque de la página ----------
+// Controla: si ya hay sesión activa, salta directo según el rol; si
+// no, deja el formulario de código listo para recibir el submit.
 document.addEventListener("DOMContentLoaded", async () => {
   // Si ya había sesión iniciada (ej. se volvió a esta pantalla por
   // error), no hace falta pedir el código de nuevo.
@@ -24,6 +27,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     .addEventListener("submit", manejarLoginConCodigo);
 });
 
+// ---------- SECCIÓN: Envío del formulario de código ----------
+// Controla: traduce el código ingresado al email real (vía la función
+// RPC "login_por_codigo" en Supabase) y hace el login con ese email y
+// el código como contraseña.
 async function manejarLoginConCodigo(evento) {
   evento.preventDefault();
 
@@ -53,6 +60,10 @@ async function manejarLoginConCodigo(evento) {
   await redirigirSegunRol();
 }
 
+// ---------- SECCIÓN: Redirección según rol ----------
+// Controla: a dónde va cada quien después de loguearse — administrador
+// (y dueño) a index.html, veedor a veedor.html. También corta el paso
+// si el perfil no existe o está desactivado.
 async function redirigirSegunRol() {
   const {
     data: { user },

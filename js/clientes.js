@@ -10,6 +10,11 @@
 // puntual se cargan en el envío, no acá — pueden variar aunque
 // el cliente sea el mismo (ej. sucursales distintas).
 
+// ---------- SECCIÓN: Acceso a datos (Supabase) ----------
+// Controla: leer y crear filas en la tabla "clientes". No toca el DOM;
+// estas funciones las reutilizan tanto clientes.html como
+// realizar-envio.html.
+
 async function listarClientes() {
   const { data, error } = await supabaseClient
     .from("clientes")
@@ -46,7 +51,8 @@ async function crearCliente(datosCliente) {
   return data;
 }
 
-// ---------- UI: alta y listado en clientes.html ----------
+// ---------- SECCIÓN: Interfaz — alta y listado en clientes.html ----------
+// Controla: la tabla de clientes y el formulario de alta manual.
 // Este script también se carga en realizar-envio.html (para reutilizar
 // listarClientes/crearCliente), donde no existe "form-cliente" — por
 // eso el bloque de abajo se sale temprano si no encuentra ese formulario.
@@ -59,11 +65,13 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", manejarAltaCliente);
 });
 
+/** Trae los clientes de la base y refresca la tabla en pantalla. */
 async function cargarTablaClientes() {
   const clientes = await listarClientes();
   pintarTablaClientes(clientes);
 }
 
+/** Dibuja las filas de la tabla de clientes (o el mensaje de "vacío"). */
 function pintarTablaClientes(clientes) {
   const tbody = document.querySelector("#tabla-clientes tbody");
   if (!clientes || clientes.length === 0) {
@@ -83,6 +91,7 @@ function pintarTablaClientes(clientes) {
     .join("");
 }
 
+/** Valida y guarda el formulario de alta de cliente. */
 async function manejarAltaCliente(evento) {
   evento.preventDefault();
 

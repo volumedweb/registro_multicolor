@@ -16,12 +16,20 @@
 // completa "Código de envío" y aparece el link a la nota de envío
 // imprimible (factura.html?envio_id=<id>, ver js/factura.js).
 
+// ---------- SECCIÓN: Estado en memoria ----------
+// Controla: catálogos cacheados (para el autocompletado) y las líneas
+// de producto/empaque que se van agregando al envío que se está
+// armando, antes de confirmarlo.
 let clientesCache = [];
 let productosCache = [];
 let tiposEmpaqueCache = [];
 let productosEnEnvio = []; // { producto_id, nombre, cantidad }
 let empaquesEnEnvio = []; // { tipo_empaque_id, nombre, cantidad }
 
+// ---------- SECCIÓN: Arranque de la página ----------
+// Controla: carga los catálogos, fija la fecha de hoy y engancha
+// todos los eventos del formulario (autocompletado, agregar líneas,
+// confirmar envío).
 document.addEventListener("DOMContentLoaded", () => {
   cargarClientes();
   cargarProductos();
@@ -45,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("submit", manejarEnvioFormulario);
 });
 
-// ---------- Fecha: siempre la de hoy, no se edita a mano ----------
+// ---------- SECCIÓN: Fecha — siempre la de hoy, no se edita a mano ----------
 
 function fijarFechaDeHoy() {
   const hoy = new Date();
@@ -55,8 +63,11 @@ function fijarFechaDeHoy() {
   document.getElementById("fecha-envio").value = `${yyyy}-${mm}-${dd}`;
 }
 
-// ---------- Carga de catálogos ----------
+// ---------- SECCIÓN: Carga de catálogos ----------
+// Controla: trae clientes/productos/tipos de empaque y llena los
+// <datalist>/<select> que alimentan el autocompletado del formulario.
 
+/** Carga los clientes y arma el <datalist> para autocompletar el nombre. */
 async function cargarClientes() {
   clientesCache = (await listarClientes()) || [];
   const datalist = document.getElementById("lista-clientes");
@@ -65,6 +76,7 @@ async function cargarClientes() {
     .join("");
 }
 
+/** Carga los productos y arma el <datalist> para autocompletar el nombre. */
 async function cargarProductos() {
   productosCache = (await listarProductos()) || [];
   const datalist = document.getElementById("lista-productos-disponibles");
@@ -73,6 +85,7 @@ async function cargarProductos() {
     .join("");
 }
 
+/** Carga los tipos de empaque y arma el <select> correspondiente. */
 async function cargarTiposEmpaque() {
   tiposEmpaqueCache = (await listarTiposEmpaque()) || [];
   const select = document.getElementById("select-empaque");
@@ -83,12 +96,13 @@ async function cargarTiposEmpaque() {
       .join("");
 }
 
-// ---------- Cliente: autocompletar al coincidir con uno existente ----------
-// Si el nombre tipeado coincide con un cliente del catálogo, se completa
-// su id y su teléfono (si lo tiene). Si no coincide (cliente nuevo o
-// todavía sin terminar de escribir), el teléfono/dirección/ciudad quedan
-// editables a mano: esos datos se usan para este envío pero no se
-// guardan en el catálogo de clientes salvo que el cliente sea nuevo.
+// ---------- SECCIÓN: Cliente — autocompletar al coincidir con uno existente ----------
+// Controla: cuando el nombre tipeado coincide con un cliente del
+// catálogo, se completa su id y su teléfono (si lo tiene). Si no
+// coincide (cliente nuevo o todavía sin terminar de escribir), el
+// teléfono/dirección/ciudad quedan editables a mano: esos datos se
+// usan para este envío pero no se guardan en el catálogo de clientes
+// salvo que el cliente sea nuevo.
 
 function manejarSeleccionCliente(evento) {
   const nombreTipeado = evento.target.value.trim();
@@ -141,7 +155,9 @@ function manejarSeleccionCliente(evento) {
   }
 }
 
-// ---------- Producto: resolver el id cuando el texto coincide ----------
+// ---------- SECCIÓN: Producto — resolver el id cuando el texto coincide ----------
+// Controla: convierte el nombre tipeado en el <input> del producto a
+// su id real, buscándolo en el catálogo cacheado.
 
 function manejarSeleccionProducto(evento) {
   const nombreTipeado = evento.target.value.trim();
@@ -152,8 +168,13 @@ function manejarSeleccionProducto(evento) {
   idInput.value = coincidencia ? coincidencia.id : "";
 }
 
-// ---------- Agregar líneas al envío ----------
+// ---------- SECCIÓN: Agregar/quitar líneas al envío ----------
+// Controla: valida y agrega cada línea de producto o empaque a los
+// arrays en memoria (productosEnEnvio / empaquesEnEnvio), y repinta
+// las listas visibles debajo de cada selector. También permite
+// quitar una línea ya agregada.
 
+/** Valida y agrega la línea de producto seleccionada al envío en curso. */
 function agregarProductoAlEnvio() {
   const idInput = document.getElementById("select-producto");
   const nombreInput = document.getElementById("input-producto");
@@ -180,6 +201,7 @@ function agregarProductoAlEnvio() {
   cantidadInput.value = "";
 }
 
+/** Valida y agrega la línea de empaque seleccionada al envío en curso. */
 function agregarEmpaqueAlEnvio() {
   const select = document.getElementById("select-empaque");
   const cantidadInput = document.getElementById("input-cantidad-empaque");
@@ -204,6 +226,7 @@ function agregarEmpaqueAlEnvio() {
   cantidadInput.value = "";
 }
 
+/** Repinta la lista visible de productos agregados al envío. */
 function pintarListaProductos() {
   pintarLista(
     "lista-productos",
@@ -213,6 +236,7 @@ function pintarListaProductos() {
   );
 }
 
+/** Repinta la lista visible de empaques agregados al envío. */
 function pintarListaEmpaques() {
   pintarLista(
     "lista-empaques",
@@ -222,6 +246,9 @@ function pintarListaEmpaques() {
   );
 }
 
+/** Dibuja una lista genérica de líneas agregadas (con botón "✕" para
+ * quitar cada una). La usan tanto la lista de productos como la de
+ * empaques. */
 function pintarLista(contenedorId, items, textoVacio, alQuitar) {
   const contenedor = document.getElementById(contenedorId);
   if (items.length === 0) {
@@ -243,17 +270,24 @@ function pintarLista(contenedorId, items, textoVacio, alQuitar) {
   });
 }
 
+/** Quita una línea de producto del envío en curso (por índice). */
 function quitarProducto(indice) {
   productosEnEnvio.splice(indice, 1);
   pintarListaProductos();
 }
 
+/** Quita una línea de empaque del envío en curso (por índice). */
 function quitarEmpaque(indice) {
   empaquesEnEnvio.splice(indice, 1);
   pintarListaEmpaques();
 }
 
-// ---------- Envío del formulario ----------
+// ---------- SECCIÓN: Confirmación — envío del formulario ----------
+// Controla: valida que haya al menos una línea cargada, crea el
+// cliente si es nuevo, arma el objeto final y llama a
+// registrarSalida() (js/salidas.js) para guardar todo en Supabase.
+// Si sale bien, muestra el código de envío y el link a la nota
+// imprimible.
 
 async function manejarEnvioFormulario(evento) {
   evento.preventDefault();

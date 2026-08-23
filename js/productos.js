@@ -61,6 +61,18 @@ async function actualizarStock(productoId, nuevaCantidad) {
   return data;
 }
 
+/** Suma `cantidad` al stock actual de un producto (reposición manual
+ * desde el listado de productos.html). Parte del último valor traído
+ * en `productosCacheLocal` para no tener que volver a consultar la
+ * base antes de calcular el nuevo total. */
+async function incrementarStock(productoId, cantidad) {
+  const producto = productosCacheLocal.find(
+    (p) => String(p.id) === String(productoId)
+  );
+  const stockActual = producto ? producto.stock : 0;
+  return actualizarStock(productoId, stockActual + cantidad);
+}
+
 // ---------- SECCIÓN: Generación de SKU ----------
 // Controla: arma el código interno (SKU) automáticamente para que el
 // usuario no tenga que inventarlo a mano en el formulario.
@@ -94,22 +106,72 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", manejarAltaProducto);
 });
 
+// Último listado de productos traído de la base — lo usa
+// incrementarStock() para calcular el nuevo total sin tener que
+// volver a consultar Supabase antes de sumar.
+let productosCacheLocal = [];
+
 /** Trae los productos de la base y refresca la tabla en pantalla. */
 async function cargarTablaProductos() {
-  const productos = await listarProductos();
-  pintarTablaProductos(productos);
+  productosCacheLocal = (await listarProductos()) || [];
+  pintarTablaProductos(productosCacheLocal);
 }
 
-/** Dibuja las filas de la tabla de productos con su stock (o el mensaje de "vacío"). */
+/** Dibuja las filas de la tabla de productos con su stock (o el mensaje
+ * de "vacío"), más un campo por fila para reponer stock sin tener que
+ * abrir ningún formulario aparte. */
 function pintarTablaProductos(productos) {
   const tbody = document.querySelector("#tabla-productos tbody");
   if (!productos || productos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="2">Todavía no hay productos registrados.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="3">Todavía no hay productos registrados.</td></tr>`;
     return;
   }
   tbody.innerHTML = productos
-    .map((p) => `<tr><td>${p.nombre}</td><td>${p.stock}</td></tr>`)
+    .map(
+      (p) => `
+        <tr>
+          <td>${p.nombre}</td>
+          <td>${p.stock}</td>
+          <td>
+            <div class="fila-reponer-stock">
+              <input
+                type="number"
+                min="1"
+                placeholder="Cant."
+                class="input-reponer-stock"
+                data-id="${p.id}"
+              />
+              <button type="button" class="btn-reponer-stock" data-id="${p.id}">+ Stock</button>
+            </div>
+          </td>
+        </tr>`
+    )
     .join("");
+
+  tbody.querySelectorAll(".btn-reponer-stock").forEach((boton) => {
+    boton.addEventListener("click", () => manejarReponerStock(boton.dataset.id));
+  });
+}
+
+/** Valida y suma la cantidad tipeada al stock del producto de esa fila. */
+async function manejarReponerStock(productoId) {
+  const input = document.querySelector(
+    `.input-reponer-stock[data-id="${productoId}"]`
+  );
+  const cantidad = input.value;
+
+  if (!esCantidadValida(cantidad)) {
+    mostrarMensaje("Ingresá una cantidad válida para reponer.", "error");
+    return;
+  }
+
+  const actualizado = await incrementarStock(productoId, Number(cantidad));
+  if (!actualizado) return; // incrementarStock ya mostró el error
+
+  mostrarMensaje(
+    `Se sumaron ${Number(cantidad)} unidades. Stock actual: ${actualizado.stock}.`
+  );
+  cargarTablaProductos();
 }
 
 /** Valida y guarda el formulario de alta de producto (nombre + stock inicial). */

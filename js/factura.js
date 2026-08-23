@@ -11,18 +11,51 @@
 // pintarFactura(), pintarFilas() y obtenerEnvioCompleto() son funciones
 // reutilizadas por js/historial.js para pintar la misma nota adentro del
 // modal (mismo markup, mismos ids) — por eso el bloque de abajo (que
-// solo aplica a esta página standalone, con botón de imprimir y
+// solo aplica a esta página standalone, con el menú de imprimir y
 // ?envio_id en la URL) se sale temprano si no encuentra "btn-imprimir".
+//
+// El botón "Imprimir" es en realidad un menú desplegable con 3
+// plantillas de detalle: por producto, por paquete, o completa (la
+// que ya existía). Los datos y el código no cambian en nada — es el
+// mismo obtenerEnvioCompleto()/pintarFactura() de siempre — lo único
+// que cambia es qué bloque de detalle queda visible antes de imprimir.
 
 // ---------- SECCIÓN: Arranque de la página (solo factura.html standalone) ----------
-// Controla: lee ?envio_id de la URL, trae el envío y lo pinta. Se sale
-// temprano si el script se cargó desde historial.html (no hay botón
-// "btn-imprimir" en ese caso, el pintado lo dispara historial.js).
+// Controla: lee ?envio_id de la URL, trae el envío, lo pinta y engancha
+// el menú de imprimir. Se sale temprano si el script se cargó desde
+// historial.html (no hay botón "btn-imprimir" en ese caso, el pintado
+// lo dispara historial.js).
 document.addEventListener("DOMContentLoaded", async () => {
   const btnImprimir = document.getElementById("btn-imprimir");
   if (!btnImprimir) return; // se cargó desde historial.html, no desde factura.html
 
-  btnImprimir.addEventListener("click", () => window.print());
+  const menuOpciones = document.getElementById("menu-imprimir-opciones");
+
+  // Abre/cierra el menú al hacer click en "Imprimir".
+  btnImprimir.addEventListener("click", (evento) => {
+    evento.stopPropagation();
+    menuOpciones.hidden = !menuOpciones.hidden;
+  });
+
+  // Cada opción del menú aplica su plantilla de detalle y manda a
+  // imprimir directamente (no hace falta un segundo click).
+  menuOpciones.querySelectorAll("button[data-modo]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      aplicarModoDetalle(boton.dataset.modo);
+      menuOpciones.hidden = true;
+      window.print();
+    });
+  });
+
+  // Cierra el menú si se hace click afuera.
+  document.addEventListener("click", () => {
+    menuOpciones.hidden = true;
+  });
+
+  // Después de imprimir (o de cancelar el diálogo de impresión), la
+  // pantalla vuelve a mostrar el detalle completo — la plantilla
+  // elegida solo afecta a esa impresión puntual.
+  window.addEventListener("afterprint", () => aplicarModoDetalle("completo"));
 
   const parametros = new URLSearchParams(window.location.search);
   const envioId = parametros.get("envio_id");
@@ -40,6 +73,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   pintarFactura(envio);
 });
+
+// ---------- SECCIÓN: Plantillas de detalle (solo producto / solo paquete / completo) ----------
+// Controla: qué bloque de detalle (productos, empaques, o ambos) queda
+// visible en la nota. No toca los datos ni cómo se traen — solo
+// muestra u oculta los bloques ya pintados por pintarFactura().
+
+/** Muestra solo el detalle de productos, solo el de empaques, o ambos
+ * ("completo"), según la opción elegida en el menú de imprimir. */
+function aplicarModoDetalle(modo) {
+  const seccionProductos = document.querySelector('[data-seccion="productos"]');
+  const seccionEmpaques = document.querySelector('[data-seccion="empaques"]');
+  if (!seccionProductos || !seccionEmpaques) return;
+
+  seccionProductos.hidden = modo === "paquete";
+  seccionEmpaques.hidden = modo === "producto";
+}
 
 // ---------- SECCIÓN: Acceso a datos (Supabase) ----------
 // Controla: trae del backend la cabecera del envío junto con sus dos

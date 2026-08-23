@@ -340,12 +340,58 @@ async function manejarEnvioFormulario(evento) {
   const envioCreado = await registrarSalida(datosSalida);
 
   // Una vez guardado, se muestra el folio y el link a la nota de envío
-  // imprimible (factura.html). Todavía depende de que registrarSalida
-  // esté implementado de verdad (ver TODO en js/salidas.js).
+  // imprimible (factura.html).
   if (envioCreado && envioCreado.numero_envio) {
     document.getElementById("codigo-envio").value = envioCreado.numero_envio;
     const linkFactura = document.getElementById("link-factura");
     linkFactura.href = `factura.html?envio_id=${envioCreado.id}`;
     linkFactura.hidden = false;
+
+    // El stock de los productos despachados y el catálogo de clientes
+    // (si se creó uno nuevo) cambiaron: se refrescan los catálogos en
+    // memoria para que el próximo envío parta con datos al día.
+    cargarProductos();
+    cargarClientes();
+
+    // Avisa con una notificación que se cierra sola (no bloquea la
+    // pantalla) y, recién cuando termina de desaparecer, limpia todos
+    // los productos/empaques cargados para que el usuario pueda
+    // arrancar el siguiente envío sin tener que borrar nada a mano.
+    mostrarMensaje("Envío registrado correctamente.", "exito", {
+      alCerrar: limpiarFormularioEnvio,
+    });
   }
+}
+
+// ---------- SECCIÓN: Limpieza después de confirmar ----------
+// Controla: una vez que la notificación de "envío registrado" terminó
+// de desaparecer, deja la pantalla lista para cargar el siguiente
+// envío — vacía las líneas de producto/empaque agregadas y los datos
+// de cliente tipeados. El código de envío y el link a la nota impresa
+// quedan visibles (no se borran) para que el usuario todavía pueda
+// abrir/imprimir la nota del envío que se acaba de guardar.
+function limpiarFormularioEnvio() {
+  productosEnEnvio = [];
+  empaquesEnEnvio = [];
+  pintarListaProductos();
+  pintarListaEmpaques();
+
+  const nombreClienteInput = document.getElementById("nombre-cliente");
+  nombreClienteInput.value = "";
+  nombreClienteInput.classList.remove("coincidencia");
+  document.getElementById("cliente-id").value = "";
+  document.getElementById("telefono-cliente").value = "";
+  document.getElementById("direccion-cliente").value = "";
+  document.getElementById("ciudad-destino").value = "";
+  document.getElementById("observaciones").value = "";
+
+  document.getElementById("nota-telefono").textContent =
+    "Se autocompleta si el cliente ya lo tiene registrado";
+  document.getElementById("nota-direccion").textContent =
+    "Se autocompleta si el cliente ya la tiene registrada";
+  document.getElementById("nota-ciudad").textContent =
+    "Se autocompleta si el cliente ya la tiene registrada";
+
+  fijarFechaDeHoy();
+  nombreClienteInput.focus();
 }

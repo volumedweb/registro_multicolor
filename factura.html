@@ -9,7 +9,14 @@
 <body hidden>
   <div class="factura-barra">
     <a href="historial.html">← Volver al historial</a>
-    <button type="button" id="btn-imprimir">Imprimir</button>
+    <div class="menu-imprimir" id="menu-imprimir">
+      <button type="button" id="btn-imprimir">Imprimir ▾</button>
+      <div class="menu-imprimir-opciones" id="menu-imprimir-opciones" hidden>
+        <button type="button" data-modo="producto">Detalle por producto</button>
+        <button type="button" data-modo="paquete">Detalle por paquete</button>
+        <button type="button" data-modo="completo">Detalle completo</button>
+      </div>
+    </div>
   </div>
 
   <div class="factura-hoja">
@@ -33,31 +40,35 @@
       <div><span class="etiqueta">Dirección:</span><span id="factura-direccion">—</span></div>
     </div>
 
-    <h2>Detalle de productos</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Cantidad</th>
-        </tr>
-      </thead>
-      <tbody id="factura-tabla-productos">
-        <!-- Se completa dinámicamente desde js/factura.js -->
-      </tbody>
-    </table>
+    <div class="factura-seccion" data-seccion="productos">
+      <h2>Detalle de productos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody id="factura-tabla-productos">
+          <!-- Se completa dinámicamente desde js/factura.js -->
+        </tbody>
+      </table>
+    </div>
 
-    <h2>Detalle de empaques</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Tipo de empaque</th>
-          <th>Cantidad</th>
-        </tr>
-      </thead>
-      <tbody id="factura-tabla-empaques">
-        <!-- Se completa dinámicamente desde js/factura.js -->
-      </tbody>
-    </table>
+    <div class="factura-seccion" data-seccion="empaques">
+      <h2>Detalle de empaques</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de empaque</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody id="factura-tabla-empaques">
+          <!-- Se completa dinámicamente desde js/factura.js -->
+        </tbody>
+      </table>
+    </div>
 
     <p id="factura-observaciones" hidden></p>
 

@@ -66,6 +66,73 @@ header.app-header nav a.activo {
   padding-bottom: 2px;
 }
 
+/* Botón "☰ Menú" — solo existe en el DOM y se muestra en pantallas
+   angostas (ver media query más abajo); lo agrega js/auth.js delante
+   del <nav> de cada página cuando tiene más de un link. */
+.menu-toggle {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.menu-toggle:hover {
+  background: var(--color-fondo);
+  color: var(--color-primario);
+}
+
+/* Bajo este ancho, el <nav> de cada página se colapsa detrás del
+   botón "☰ Menú": se apila en columna y ocupa todo el ancho del
+   header cuando se abre, en vez de amontonar los links en varias
+   filas cortadas. */
+@media (max-width: 700px) {
+  header.app-header {
+    justify-content: flex-start;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  header.app-header nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    flex-basis: 100%;
+    order: 10;
+    margin-top: 12px;
+    row-gap: 0;
+  }
+
+  header.app-header nav.nav-abierta {
+    display: flex;
+  }
+
+  header.app-header nav a {
+    margin-left: 0;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--color-borde);
+  }
+
+  header.app-header nav a.cerrar-sesion {
+    margin-left: 0;
+    padding-left: 4px;
+    border-left: none;
+    border-top: 1px solid var(--color-borde);
+    border-bottom: none;
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+}
+
 main {
   max-width: 960px;
   margin: 32px auto;

@@ -107,6 +107,45 @@ async function cerrarSesion() {
   window.location.href = "login.html";
 }
 
+// ---------- SECCIÓN: Menú "☰" para pantallas angostas ----------
+// Controla: en vez de que los links del <nav> se amontonen en varias
+// filas cortadas en el celular, bajo los 700px (ver css/styles.css)
+// el <nav> se esconde detrás de un botón "☰ Menú" que se agrega acá
+// mismo por JS (no hace falta tocar el HTML de cada página). En
+// pantallas más anchas el botón queda oculto y el <nav> se ve normal,
+// horizontal, como siempre.
+
+/** Agrega el botón "☰ Menú" antes del <nav> del header (si existe y
+ * tiene más de un link) y lo conecta para mostrar/ocultar el <nav>. */
+function configurarMenuMovil() {
+  const nav = document.querySelector("header.app-header nav");
+  if (!nav || nav.children.length <= 1) return; // veedor.html solo tiene "Cerrar sesión": no hace falta
+
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "menu-toggle";
+  boton.setAttribute("aria-expanded", "false");
+  boton.textContent = "☰ Menú";
+
+  boton.addEventListener("click", () => {
+    const abierto = nav.classList.toggle("nav-abierta");
+    boton.setAttribute("aria-expanded", String(abierto));
+    boton.textContent = abierto ? "✕ Cerrar menú" : "☰ Menú";
+  });
+
+  // Al elegir una sección del menú, se cierra solo (evita que quede
+  // abierto tapando la pantalla siguiente).
+  nav.addEventListener("click", (evento) => {
+    if (evento.target.tagName === "A" && nav.classList.contains("nav-abierta")) {
+      nav.classList.remove("nav-abierta");
+      boton.setAttribute("aria-expanded", "false");
+      boton.textContent = "☰ Menú";
+    }
+  });
+
+  nav.before(boton);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const link = document.getElementById("cerrar-sesion");
   if (link) {
@@ -115,4 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
       cerrarSesion();
     });
   }
+
+  configurarMenuMovil();
 });

@@ -781,23 +781,125 @@ button:hover {
 }
 
 /* ============================================================
-   Productos — reponer stock directo desde el listado
+   Título de listado + botón de acción secundaria (usado en
+   productos.html y clientes.html, junto al título de la tarjeta)
    ============================================================ */
 
-.fila-reponer-stock {
+.listado-productos-titulo,
+.listado-clientes-titulo {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
 }
 
-.fila-reponer-stock .input-reponer-stock {
-  width: 70px;
-  padding: 6px 8px;
+.listado-productos-titulo h2,
+.listado-clientes-titulo h2 {
+  margin: 0;
 }
 
-.fila-reponer-stock .btn-reponer-stock {
+/* ============================================================
+   Productos — botón "Agregar o quitar stock" + su modal
+   ============================================================ */
+
+/* Botón de borde (no relleno) para acciones secundarias — se usa acá
+   y podría reutilizarse en otras pantallas más adelante. */
+.btn-secundario {
+  background: transparent;
+  color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+}
+
+.btn-secundario:hover {
+  background: rgba(132, 99, 168, 0.08);
+  color: var(--color-primario-oscuro);
+}
+
+.modal-stock {
+  background: var(--color-fondo);
+  border-radius: var(--radio);
+  width: 100%;
+  max-width: 420px;
+}
+
+.modal-stock-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.modal-stock-cuerpo {
+  padding: 20px;
+}
+
+.modal-stock-cuerpo .campo {
+  margin-bottom: 0;
+}
+
+.stock-actual {
+  margin: 18px 0 10px;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.stock-actual strong {
+  color: var(--color-texto);
+  font-size: 1.1rem;
+}
+
+.fila-ajuste-stock {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+}
+
+.fila-ajuste-stock input {
+  width: 100%;
+}
+
+.btn-quitar-stock {
+  background: var(--color-alerta);
+}
+
+.btn-quitar-stock:hover {
+  background: #96413e;
+}
+
+.btn-adicionar-stock {
+  background: var(--color-exito);
+}
+
+.btn-adicionar-stock:hover {
+  background: #44614c;
+}
+
+/* ============================================================
+   Botones de eliminar — listados de empaques/clientes (por fila) y
+   modal de historial (elimina el envío completo)
+   ============================================================ */
+
+.btn-eliminar {
+  background: transparent;
+  color: var(--color-alerta);
+  border: 1px solid var(--color-alerta);
   padding: 6px 12px;
   font-size: 0.85rem;
-  white-space: nowrap;
+}
+
+.btn-eliminar:hover {
+  background: rgba(177, 82, 79, 0.1);
+  color: var(--color-alerta);
+}
+
+.btn-eliminar-envio {
+  background: var(--color-alerta);
+}
+
+.btn-eliminar-envio:hover {
+  background: #96413e;
 }
 
 /* ============================================================

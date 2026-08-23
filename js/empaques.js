@@ -36,6 +36,19 @@ async function crearTipoEmpaque(datosEmpaque) {
   return data;
 }
 
+/** Borra un tipo de empaque ya registrado. Si algún envío lo usa, la
+ * base rechaza el borrado (envio_empaques.tipo_empaque_id lo
+ * referencia) y el error de Supabase se muestra tal cual. */
+async function eliminarTipoEmpaque(id) {
+  const { error } = await supabaseClient.from("tipos_empaque").delete().eq("id", id);
+
+  if (error) {
+    mostrarMensaje("No se pudo eliminar el tipo de empaque: " + error.message, "error");
+    return false;
+  }
+  return true;
+}
+
 // ---------- SECCIÓN: Interfaz — alta y listado en empaques.html ----------
 // Controla: la tabla de tipos de empaque y el formulario de alta.
 // Este script también se carga en realizar-envio.html (para reutilizar
@@ -56,14 +69,48 @@ async function cargarTablaEmpaques() {
   pintarTablaEmpaques(tipos);
 }
 
-/** Dibuja las filas de la tabla de tipos de empaque (o el mensaje de "vacío"). */
+/** Dibuja las filas de la tabla de tipos de empaque (o el mensaje de
+ * "vacío"), con un botón para eliminar cada uno ya guardado. */
 function pintarTablaEmpaques(tipos) {
   const tbody = document.querySelector("#tabla-empaques tbody");
   if (!tipos || tipos.length === 0) {
-    tbody.innerHTML = `<tr><td>Todavía no hay tipos de empaque registrados.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="2">Todavía no hay tipos de empaque registrados.</td></tr>`;
     return;
   }
-  tbody.innerHTML = tipos.map((t) => `<tr><td>${t.nombre}</td></tr>`).join("");
+  tbody.innerHTML = tipos
+    .map(
+      (t) => `
+        <tr>
+          <td>${t.nombre}</td>
+          <td>
+            <button type="button" class="btn-eliminar" data-id="${t.id}" data-nombre="${t.nombre}">
+              Eliminar
+            </button>
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  tbody.querySelectorAll(".btn-eliminar").forEach((boton) => {
+    boton.addEventListener("click", () => manejarEliminarTipoEmpaque(boton));
+  });
+}
+
+/** Pide confirmación y elimina el tipo de empaque de esa fila. */
+async function manejarEliminarTipoEmpaque(boton) {
+  const id = boton.dataset.id;
+  const nombre = boton.dataset.nombre;
+
+  const confirmado = confirm(
+    `¿Eliminar el tipo de empaque "${nombre}"? Esta acción no se puede deshacer.`
+  );
+  if (!confirmado) return;
+
+  const eliminado = await eliminarTipoEmpaque(id);
+  if (!eliminado) return; // eliminarTipoEmpaque ya mostró el error
+
+  mostrarMensaje("Tipo de empaque eliminado.");
+  cargarTablaEmpaques();
 }
 
 /** Valida y guarda el formulario de alta de tipo de empaque. */

@@ -11,13 +11,15 @@
 
 // ---------- SECCIÓN: Estado ----------
 // Controla: guarda en memoria la última lista de envíos traída de la
-// base, para poder filtrarla en el buscador sin volver a consultar
-// Supabase cada vez que se tipea.
+// base (para filtrar sin volver a consultar Supabase) y el id del
+// envío que está abierto en el modal en este momento (lo necesitan
+// tanto la descarga de PDF con nombre de archivo como el borrado).
 let historialCache = [];
+let envioIdEnModal = null;
 
 // ---------- SECCIÓN: Arranque de la página ----------
 // Controla: carga el historial inicial y engancha todos los eventos
-// de la pantalla (buscador, cerrar modal, descargar PDF).
+// de la pantalla (buscador, cerrar modal, menú de descarga, eliminar).
 document.addEventListener("DOMContentLoaded", () => {
   cargarHistorial();
 
@@ -37,9 +39,33 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", (evento) => {
       if (evento.target.id === "modal-factura") cerrarModalFactura();
     });
+
+  // "Descargar PDF" es un menú desplegable con las mismas 3
+  // plantillas de detalle que "Imprimir" en factura.html (por
+  // producto / por paquete / completo) — mismos datos, solo cambia
+  // qué tabla queda visible en el PDF exportado.
+  const btnDescargar = document.getElementById("btn-descargar-pdf");
+  const menuDescargarOpciones = document.getElementById("menu-descargar-opciones");
+
+  btnDescargar.addEventListener("click", (evento) => {
+    evento.stopPropagation();
+    menuDescargarOpciones.hidden = !menuDescargarOpciones.hidden;
+  });
+
+  menuDescargarOpciones.querySelectorAll("button[data-modo]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      menuDescargarOpciones.hidden = true;
+      descargarFacturaPdf(boton.dataset.modo);
+    });
+  });
+
+  document.addEventListener("click", () => {
+    menuDescargarOpciones.hidden = true;
+  });
+
   document
-    .getElementById("btn-descargar-pdf")
-    .addEventListener("click", descargarFacturaPdf);
+    .getElementById("btn-eliminar-envio")
+    .addEventListener("click", manejarEliminarEnvio);
 });
 
 // ---------- SECCIÓN: Listado ----------
@@ -146,31 +172,75 @@ async function abrirModalFactura(envioId) {
     mostrarMensaje("No se pudo cargar ese envío.", "error");
     return;
   }
+  envioIdEnModal = envioId;
   pintarFactura(envio); // definida en js/factura.js, mismo markup que factura.html
   document.getElementById("modal-factura").hidden = false;
 }
 
-/** Oculta el modal de detalle. */
+/** Oculta el modal de detalle y limpia su estado (menú de descarga
+ * abierto, plantilla de detalle elegida, id del envío en memoria). */
 function cerrarModalFactura() {
   document.getElementById("modal-factura").hidden = true;
+  document.getElementById("menu-descargar-opciones").hidden = true;
+  aplicarModoDetalle("completo"); // definida en js/factura.js
+  envioIdEnModal = null;
 }
 
 // ---------- SECCIÓN: Descarga en PDF (tamaño carta) ----------
-// Controla: exporta el contenido del modal a un PDF descargable con
-// el nombre "nota-envio-<numero>.pdf", usando la librería html2pdf.
+// Controla: exporta el contenido del modal a un PDF descargable,
+// usando la librería html2pdf. `modo` es la misma plantilla de
+// detalle de factura.html ("producto" | "paquete" | "completo",
+// por defecto) — aplicarModoDetalle() (js/factura.js) muestra u
+// oculta las tablas antes de generar el PDF y se restaura a
+// "completo" al terminar, sin tocar los datos ni el resto del diseño.
 
-async function descargarFacturaPdf() {
+async function descargarFacturaPdf(modo = "completo") {
+  aplicarModoDetalle(modo);
+
   const elemento = document.getElementById("factura-modal-contenido");
   const numero = document.getElementById("factura-numero").textContent;
+  const sufijo = modo === "completo" ? "" : `-${modo}`;
 
   await html2pdf()
     .set({
       margin: 0.4,
-      filename: `nota-envio-${numero}.pdf`,
+      filename: `nota-envio-${numero}${sufijo}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
     })
     .from(elemento)
     .save();
+
+  aplicarModoDetalle("completo");
+}
+
+// ---------- SECCIÓN: Eliminar un envío del historial ----------
+// Controla: borra por completo un envío (cabecera + su detalle de
+// productos y de empaques, que se van en cascada por la relación
+// definida en supabase/schema.sql) después de pedir confirmación.
+
+/** Pide confirmación y elimina el envío que está abierto en el modal. */
+async function manejarEliminarEnvio() {
+  if (!envioIdEnModal) return;
+
+  const numero = document.getElementById("factura-numero").textContent;
+  const confirmado = confirm(
+    `¿Eliminar el envío ${numero} del historial? Esta acción no se puede deshacer y no repone el stock que se descontó al registrarlo.`
+  );
+  if (!confirmado) return;
+
+  const { error } = await supabaseClient
+    .from("envios")
+    .delete()
+    .eq("id", envioIdEnModal);
+
+  if (error) {
+    mostrarMensaje("No se pudo eliminar el envío: " + error.message, "error");
+    return;
+  }
+
+  mostrarMensaje("Envío eliminado del historial.");
+  cerrarModalFactura();
+  cargarHistorial();
 }

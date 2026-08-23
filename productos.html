@@ -37,13 +37,17 @@
     </div>
 
     <div class="tarjeta">
-      <h2>Listado de productos</h2>
+      <div class="listado-productos-titulo">
+        <h2>Listado de productos</h2>
+        <button type="button" id="btn-abrir-stock" class="btn-secundario">
+          Agregar o quitar stock
+        </button>
+      </div>
       <table id="tabla-productos">
         <thead>
           <tr>
             <th>Producto</th>
             <th>Stock</th>
-            <th>Reponer stock</th>
           </tr>
         </thead>
         <tbody>
@@ -52,6 +56,46 @@
       </table>
     </div>
   </main>
+
+  <!-- Modal para sumar o restar stock: primero se busca el producto por
+       nombre, y recién cuando hay una coincidencia aparecen la cantidad
+       y los botones de "Quitar"/"Adicionar". -->
+  <div class="modal-overlay" id="modal-stock" hidden>
+    <div class="modal-stock">
+      <div class="modal-stock-barra">
+        <strong>Agregar o quitar stock</strong>
+        <button type="button" id="btn-cerrar-modal-stock" class="btn-cerrar">✕ Cerrar</button>
+      </div>
+
+      <div class="modal-stock-cuerpo">
+        <div class="campo">
+          <label for="buscador-stock">Buscar producto</label>
+          <input
+            type="text"
+            id="buscador-stock"
+            list="lista-productos-stock"
+            autocomplete="off"
+            placeholder="Escribí el nombre del producto"
+          />
+          <input type="hidden" id="producto-stock-id" />
+          <datalist id="lista-productos-stock">
+            <!-- Se completa dinámicamente desde js/productos.js -->
+          </datalist>
+        </div>
+
+        <div id="detalle-producto-stock" hidden>
+          <p class="stock-actual">
+            Stock actual: <strong id="stock-actual-valor">0</strong>
+          </p>
+          <div class="fila-ajuste-stock">
+            <input type="number" id="input-cantidad-stock" min="1" placeholder="Cantidad" />
+            <button type="button" id="btn-quitar-stock" class="btn-quitar-stock">Quitar</button>
+            <button type="button" id="btn-adicionar-stock" class="btn-adicionar-stock">Adicionar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>

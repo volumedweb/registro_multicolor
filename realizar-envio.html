@@ -46,6 +46,20 @@
             </datalist>
           </div>
           <div class="campo-envio">
+            <label for="nombre-receptor">Nombre de quien recibe</label>
+            <input
+              type="text"
+              id="nombre-receptor"
+              name="nombre_receptor"
+              placeholder="Ej: portería, otra persona autorizada..."
+            />
+            <span class="nota-campo">
+              Si no siempre recibe el cliente, escribí acá quién lo hace — sale
+              en el espacio "Recibe" de la nota de envío. Si se deja vacío, se
+              usa el nombre del cliente.
+            </span>
+          </div>
+          <div class="campo-envio">
             <label for="codigo-envio">Código de envío</label>
             <input type="text" id="codigo-envio" name="codigo_envio" placeholder="Se genera al confirmar" disabled />
             <span class="nota-campo">Folio único del envío (antes eran dos, uno por producto y otro por empaque — ahora es uno solo)</span>

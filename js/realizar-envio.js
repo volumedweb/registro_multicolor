@@ -317,14 +317,18 @@ async function manejarEnvioFormulario(evento) {
     clienteId = nuevoCliente && nuevoCliente.id;
   }
 
+  // "Nombre de quien recibe" es un campo aparte porque no siempre es
+  // el cliente quien recoge el pedido (portería, otra persona
+  // autorizada, etc.). Si se deja vacío, se usa el nombre del cliente
+  // — así el caso más común (recibe el propio cliente) no obliga a
+  // escribirlo dos veces.
+  const receptorTipeado = document.getElementById("nombre-receptor").value.trim();
+  const nombreCliente = document.getElementById("nombre-cliente").value;
+
   const datosSalida = {
     cliente_id: clienteId,
     ciudad_destino: document.getElementById("ciudad-destino").value,
-    // No hay un campo separado para "quien recibe" en este formulario;
-    // por ahora se usa el mismo nombre del cliente (la tabla "envios"
-    // exige este dato). Si más adelante hace falta distinguir a un
-    // receptor distinto del cliente, se puede agregar un campo nuevo acá.
-    nombre_receptor: document.getElementById("nombre-cliente").value,
+    nombre_receptor: receptorTipeado || nombreCliente,
     fecha: document.getElementById("fecha-envio").value,
     observaciones: document.getElementById("observaciones").value,
     productos: productosEnEnvio,
@@ -380,6 +384,7 @@ function limpiarFormularioEnvio() {
   nombreClienteInput.value = "";
   nombreClienteInput.classList.remove("coincidencia");
   document.getElementById("cliente-id").value = "";
+  document.getElementById("nombre-receptor").value = "";
   document.getElementById("telefono-cliente").value = "";
   document.getElementById("direccion-cliente").value = "";
   document.getElementById("ciudad-destino").value = "";

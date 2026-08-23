@@ -61,18 +61,6 @@ async function actualizarStock(productoId, nuevaCantidad) {
   return data;
 }
 
-/** Suma `cantidad` al stock actual de un producto (reposición manual
- * desde el listado de productos.html). Parte del último valor traído
- * en `productosCacheLocal` para no tener que volver a consultar la
- * base antes de calcular el nuevo total. */
-async function incrementarStock(productoId, cantidad) {
-  const producto = productosCacheLocal.find(
-    (p) => String(p.id) === String(productoId)
-  );
-  const stockActual = producto ? producto.stock : 0;
-  return actualizarStock(productoId, stockActual + cantidad);
-}
-
 // ---------- SECCIÓN: Generación de SKU ----------
 // Controla: arma el código interno (SKU) automáticamente para que el
 // usuario no tenga que inventarlo a mano en el formulario.
@@ -104,11 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   cargarTablaProductos();
   form.addEventListener("submit", manejarAltaProducto);
+  configurarModalStock();
 });
 
-// Último listado de productos traído de la base — lo usa
-// incrementarStock() para calcular el nuevo total sin tener que
-// volver a consultar Supabase antes de sumar.
+// Último listado de productos traído de la base — lo usa el modal de
+// ajuste de stock para buscar por nombre y calcular el nuevo total sin
+// tener que volver a consultar Supabase en cada paso.
 let productosCacheLocal = [];
 
 /** Trae los productos de la base y refresca la tabla en pantalla. */
@@ -117,61 +106,18 @@ async function cargarTablaProductos() {
   pintarTablaProductos(productosCacheLocal);
 }
 
-/** Dibuja las filas de la tabla de productos con su stock (o el mensaje
- * de "vacío"), más un campo por fila para reponer stock sin tener que
- * abrir ningún formulario aparte. */
+/** Dibuja las filas de la tabla de productos con su stock (o el
+ * mensaje de "vacío"). El ajuste de stock se hace aparte, desde el
+ * botón "Agregar o quitar stock" (ver configurarModalStock()). */
 function pintarTablaProductos(productos) {
   const tbody = document.querySelector("#tabla-productos tbody");
   if (!productos || productos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3">Todavía no hay productos registrados.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="2">Todavía no hay productos registrados.</td></tr>`;
     return;
   }
   tbody.innerHTML = productos
-    .map(
-      (p) => `
-        <tr>
-          <td>${p.nombre}</td>
-          <td>${p.stock}</td>
-          <td>
-            <div class="fila-reponer-stock">
-              <input
-                type="number"
-                min="1"
-                placeholder="Cant."
-                class="input-reponer-stock"
-                data-id="${p.id}"
-              />
-              <button type="button" class="btn-reponer-stock" data-id="${p.id}">+ Stock</button>
-            </div>
-          </td>
-        </tr>`
-    )
+    .map((p) => `<tr><td>${p.nombre}</td><td>${p.stock}</td></tr>`)
     .join("");
-
-  tbody.querySelectorAll(".btn-reponer-stock").forEach((boton) => {
-    boton.addEventListener("click", () => manejarReponerStock(boton.dataset.id));
-  });
-}
-
-/** Valida y suma la cantidad tipeada al stock del producto de esa fila. */
-async function manejarReponerStock(productoId) {
-  const input = document.querySelector(
-    `.input-reponer-stock[data-id="${productoId}"]`
-  );
-  const cantidad = input.value;
-
-  if (!esCantidadValida(cantidad)) {
-    mostrarMensaje("Ingresá una cantidad válida para reponer.", "error");
-    return;
-  }
-
-  const actualizado = await incrementarStock(productoId, Number(cantidad));
-  if (!actualizado) return; // incrementarStock ya mostró el error
-
-  mostrarMensaje(
-    `Se sumaron ${Number(cantidad)} unidades. Stock actual: ${actualizado.stock}.`
-  );
-  cargarTablaProductos();
 }
 
 /** Valida y guarda el formulario de alta de producto (nombre + stock inicial). */
@@ -192,4 +138,116 @@ async function manejarAltaProducto(evento) {
   mostrarMensaje("Producto guardado correctamente.");
   evento.target.reset();
   cargarTablaProductos();
+}
+
+// ---------- SECCIÓN: Modal "Agregar o quitar stock" ----------
+// Controla: el flujo completo del botón "Agregar o quitar stock" —
+// buscar el producto por nombre (igual que en "Realizar envío": se
+// escribe y se resuelve contra la datalist) y, recién cuando hay una
+// coincidencia, mostrar la cantidad y los botones "Quitar"/"Adicionar".
+// El modal queda abierto después de cada ajuste para poder encadenar
+// varios productos sin tener que reabrirlo cada vez.
+
+function configurarModalStock() {
+  const btnAbrir = document.getElementById("btn-abrir-stock");
+  if (!btnAbrir) return; // por si este archivo se carga en otra pantalla
+
+  const modal = document.getElementById("modal-stock");
+  const btnCerrar = document.getElementById("btn-cerrar-modal-stock");
+  const buscador = document.getElementById("buscador-stock");
+  const datalist = document.getElementById("lista-productos-stock");
+  const idInput = document.getElementById("producto-stock-id");
+  const detalle = document.getElementById("detalle-producto-stock");
+  const stockActualEl = document.getElementById("stock-actual-valor");
+  const cantidadInput = document.getElementById("input-cantidad-stock");
+  const btnQuitar = document.getElementById("btn-quitar-stock");
+  const btnAdicionar = document.getElementById("btn-adicionar-stock");
+
+  btnAbrir.addEventListener("click", () => {
+    datalist.innerHTML = productosCacheLocal
+      .map((p) => `<option value="${p.nombre}"></option>`)
+      .join("");
+    modal.hidden = false;
+    buscador.focus();
+  });
+
+  btnCerrar.addEventListener("click", cerrarModalStock);
+  modal.addEventListener("click", (evento) => {
+    if (evento.target.id === "modal-stock") cerrarModalStock();
+  });
+
+  function cerrarModalStock() {
+    modal.hidden = true;
+    buscador.value = "";
+    idInput.value = "";
+    cantidadInput.value = "";
+    detalle.hidden = true;
+  }
+
+  // Al tipear, resuelve el producto igual que en "Realizar envío": si
+  // el texto coincide exacto (sin importar mayúsculas) con uno del
+  // catálogo, recién ahí aparecen la cantidad y los botones.
+  buscador.addEventListener("input", () => {
+    const nombreTipeado = buscador.value.trim().toLowerCase();
+    const coincidencia = productosCacheLocal.find(
+      (p) => p.nombre.toLowerCase() === nombreTipeado
+    );
+
+    if (coincidencia) {
+      idInput.value = coincidencia.id;
+      stockActualEl.textContent = coincidencia.stock;
+      detalle.hidden = false;
+    } else {
+      idInput.value = "";
+      detalle.hidden = true;
+    }
+  });
+
+  btnAdicionar.addEventListener("click", () => ajustarStockDesdeModal(1));
+  btnQuitar.addEventListener("click", () => ajustarStockDesdeModal(-1));
+
+  /** Suma o resta (según `signo`) la cantidad tipeada al stock del
+   * producto encontrado, valida que no quede negativo, y deja el
+   * modal listo para ajustar otro producto sin cerrarlo. */
+  async function ajustarStockDesdeModal(signo) {
+    const productoId = idInput.value;
+    const cantidad = cantidadInput.value;
+
+    if (!productoId) {
+      mostrarMensaje("Buscá y elegí un producto de la lista.", "error");
+      return;
+    }
+    if (!esCantidadValida(cantidad)) {
+      mostrarMensaje("Ingresá una cantidad válida.", "error");
+      return;
+    }
+
+    const numero = Number(cantidad);
+    const producto = productosCacheLocal.find(
+      (p) => String(p.id) === String(productoId)
+    );
+    const stockActual = producto ? producto.stock : 0;
+
+    if (signo < 0 && numero > stockActual) {
+      mostrarMensaje(
+        `No hay suficiente stock: quedan ${stockActual} unidades.`,
+        "error"
+      );
+      return;
+    }
+
+    const nuevoStock = stockActual + signo * numero;
+    const actualizado = await actualizarStock(productoId, nuevoStock);
+    if (!actualizado) return; // actualizarStock ya mostró el error
+
+    mostrarMensaje(
+      signo < 0
+        ? `Se quitaron ${numero} unidades. Stock actual: ${actualizado.stock}.`
+        : `Se agregaron ${numero} unidades. Stock actual: ${actualizado.stock}.`
+    );
+
+    stockActualEl.textContent = actualizado.stock;
+    cantidadInput.value = "";
+    await cargarTablaProductos(); // refresca el listado y el catálogo en memoria
+  }
 }

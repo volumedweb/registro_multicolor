@@ -40,7 +40,15 @@
   <div class="modal-overlay" id="modal-factura" hidden>
     <div class="modal-factura">
       <div class="modal-factura-barra">
-        <button type="button" id="btn-descargar-pdf">Descargar PDF</button>
+        <div class="menu-imprimir" id="menu-descargar">
+          <button type="button" id="btn-descargar-pdf">Descargar PDF ▾</button>
+          <div class="menu-imprimir-opciones" id="menu-descargar-opciones" hidden>
+            <button type="button" data-modo="producto">Detalle por producto</button>
+            <button type="button" data-modo="paquete">Detalle por paquete</button>
+            <button type="button" data-modo="completo">Detalle completo</button>
+          </div>
+        </div>
+        <button type="button" id="btn-eliminar-envio" class="btn-eliminar-envio">Eliminar envío</button>
         <button type="button" id="btn-cerrar-modal" class="btn-cerrar">✕ Cerrar</button>
       </div>
 
@@ -65,31 +73,35 @@
           <div><span class="etiqueta">Dirección:</span><span id="factura-direccion">—</span></div>
         </div>
 
-        <h2>Detalle de productos</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody id="factura-tabla-productos">
-            <!-- Se completa dinámicamente al abrir el modal -->
-          </tbody>
-        </table>
+        <div class="factura-seccion" data-seccion="productos">
+          <h2>Detalle de productos</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody id="factura-tabla-productos">
+              <!-- Se completa dinámicamente al abrir el modal -->
+            </tbody>
+          </table>
+        </div>
 
-        <h2>Detalle de empaques</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Tipo de empaque</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody id="factura-tabla-empaques">
-            <!-- Se completa dinámicamente al abrir el modal -->
-          </tbody>
-        </table>
+        <div class="factura-seccion" data-seccion="empaques">
+          <h2>Detalle de empaques</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo de empaque</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody id="factura-tabla-empaques">
+              <!-- Se completa dinámicamente al abrir el modal -->
+            </tbody>
+          </table>
+        </div>
 
         <p id="factura-observaciones" hidden></p>
 

@@ -45,7 +45,12 @@
     </div>
 
     <div class="tarjeta">
-      <h2>Listado de clientes</h2>
+      <div class="listado-clientes-titulo">
+        <h2>Listado de clientes</h2>
+        <button type="button" id="btn-abrir-editar-cliente" class="btn-secundario">
+          Editar cliente
+        </button>
+      </div>
       <table id="tabla-clientes">
         <thead>
           <tr>
@@ -53,6 +58,7 @@
             <th>Teléfono</th>
             <th>Dirección</th>
             <th>Ciudad</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -61,6 +67,55 @@
       </table>
     </div>
   </main>
+
+  <!-- Modal para editar un cliente ya guardado: primero se busca por
+       nombre, y recién cuando hay una coincidencia aparece el
+       formulario con sus datos para corregir cualquier campo. -->
+  <div class="modal-overlay" id="modal-editar-cliente" hidden>
+    <div class="modal-stock">
+      <div class="modal-stock-barra">
+        <strong>Editar cliente</strong>
+        <button type="button" id="btn-cerrar-modal-editar-cliente" class="btn-cerrar">✕ Cerrar</button>
+      </div>
+
+      <div class="modal-stock-cuerpo">
+        <div class="campo">
+          <label for="buscador-editar-cliente">Buscar cliente</label>
+          <input
+            type="text"
+            id="buscador-editar-cliente"
+            list="lista-clientes-editar"
+            autocomplete="off"
+            placeholder="Escribí el nombre del cliente"
+          />
+          <datalist id="lista-clientes-editar">
+            <!-- Se completa dinámicamente desde js/clientes.js -->
+          </datalist>
+        </div>
+
+        <form id="form-editar-cliente" hidden>
+          <input type="hidden" id="editar-cliente-id" />
+          <div class="campo">
+            <label for="editar-nombre-cliente">Nombre</label>
+            <input type="text" id="editar-nombre-cliente" required />
+          </div>
+          <div class="campo">
+            <label for="editar-telefono-cliente">Teléfono</label>
+            <input type="tel" id="editar-telefono-cliente" placeholder="Ej: 700 00000" />
+          </div>
+          <div class="campo">
+            <label for="editar-direccion-cliente">Dirección</label>
+            <input type="text" id="editar-direccion-cliente" placeholder="Ej: Av. Siempre Viva 123" />
+          </div>
+          <div class="campo">
+            <label for="editar-ciudad-cliente">Ciudad</label>
+            <input type="text" id="editar-ciudad-cliente" placeholder="Ej: La Paz" />
+          </div>
+          <button type="submit">Guardar cambios</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>

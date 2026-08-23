@@ -220,15 +220,11 @@ async function descargarFacturaPdf(modo = "completo") {
 // productos y de empaques, que se van en cascada por la relación
 // definida en supabase/schema.sql) después de pedir confirmación.
 
-/** Pide confirmación y elimina el envío que está abierto en el modal. */
+/** Elimina el envío que está abierto en el modal (sin ventana de confirmación aparte: el toast avisa el resultado). */
 async function manejarEliminarEnvio() {
   if (!envioIdEnModal) return;
 
   const numero = document.getElementById("factura-numero").textContent;
-  const confirmado = confirm(
-    `¿Eliminar el envío ${numero} del historial? Esta acción no se puede deshacer y no repone el stock que se descontó al registrarlo.`
-  );
-  if (!confirmado) return;
 
   const { error } = await supabaseClient
     .from("envios")
@@ -240,7 +236,7 @@ async function manejarEliminarEnvio() {
     return;
   }
 
-  mostrarMensaje("Envío eliminado del historial.");
+  mostrarMensaje(`Envío ${numero} eliminado del historial (no repone el stock descontado).`);
   cerrarModalFactura();
   cargarHistorial();
 }

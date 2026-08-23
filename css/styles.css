@@ -3,18 +3,19 @@
    ============================================================ */
 
 :root {
-  --color-fondo: #ebe4ee;
-  --color-superficie: #f5eff7;
-  --color-texto: #332b3a;
-  --color-texto-suave: #746b7d;
-  --color-primario: #8463a8;
-  --color-primario-oscuro: #6b4e8c;
-  --color-borde: #d9cbe0;
-  --color-exito: #557a5f;
-  --color-alerta: #b1524f;
+  --color-fondo: #f7f5f4;
+  --color-superficie: #ffffff;
+  --color-texto: #262322;
+  --color-texto-suave: #6b6560;
+  --color-primario: #c23b34;
+  --color-primario-oscuro: #9c2e28;
+  --color-borde: #e4e0dd;
+  --color-exito: #3f7a52;
+  --color-alerta: #9c2e28;
   --color-acento: #4f8496;
-  --radio: 8px;
+  --radio: 3px;
   --espaciado: 16px;
+  --sombra: 0 1px 3px rgba(38, 35, 34, 0.07);
 }
 
 * {
@@ -31,10 +32,20 @@ body {
 header.app-header {
   background: var(--color-superficie);
   border-bottom: 1px solid var(--color-borde);
+  border-top: 3px solid var(--color-primario);
   padding: var(--espaciado) 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 0;
+}
+
+header.app-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 8px;
 }
 
 header.app-header nav a {
@@ -49,16 +60,38 @@ header.app-header nav a.activo {
   color: var(--color-primario);
 }
 
+header.app-header nav a.activo {
+  display: inline-block;
+  border-bottom: 2px solid var(--color-primario);
+  padding-bottom: 2px;
+}
+
 main {
   max-width: 960px;
   margin: 32px auto;
   padding: 0 24px;
 }
 
+@media (max-width: 640px) {
+  header.app-header {
+    padding: 12px 16px;
+  }
+
+  main {
+    margin: 20px auto;
+    padding: 0 14px;
+  }
+
+  .tarjeta {
+    padding: 16px;
+  }
+}
+
 .tarjeta {
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio);
+  box-shadow: var(--sombra);
   padding: 24px;
   margin-bottom: 24px;
 }
@@ -66,6 +99,24 @@ main {
 table {
   width: 100%;
   border-collapse: collapse;
+}
+
+/* En pantallas angostas, una tabla ancha se desborda en vez de romper
+   el resto del layout: se vuelve un bloque con scroll horizontal
+   propio (thead/tbody pasan a "display: table" para conservar el
+   alineado de columnas dentro de ese bloque). */
+@media (max-width: 640px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  table thead,
+  table tbody {
+    display: table;
+    width: 100%;
+  }
 }
 
 th, td {
@@ -127,7 +178,7 @@ button:hover {
 .envio-cabecera .campo-envio {
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
-  border-radius: 6px;
+  border-radius: var(--radio);
   padding: 0;
 }
 
@@ -158,6 +209,13 @@ button:hover {
   font-weight: 600;
 }
 
+/* Campo que se marca aparte del resto (ej. "Nombre de quien recibe",
+   porque no siempre es el cliente) — franja roja a la izquierda en
+   vez de un borde completo, para no competir con el resto de campos. */
+.envio-cabecera .campo-envio.campo-destacado {
+  border-left: 3px solid var(--color-primario);
+}
+
 /* Texto de ayuda bajo teléfono/dirección: aclara qué datos se
    guardan en el cliente y cuáles quedan solo en este envío */
 .envio-cabecera .campo-envio .nota-campo {
@@ -185,6 +243,7 @@ button:hover {
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio);
+  box-shadow: var(--sombra);
   padding: 16px;
 }
 
@@ -199,7 +258,7 @@ button:hover {
 .panel-envio .panel-titulo span {
   background: var(--color-primario);
   color: #fff;
-  border-radius: 6px;
+  border-radius: var(--radio);
   padding: 10px 14px;
   font-weight: 600;
   flex: 1;
@@ -209,7 +268,7 @@ button:hover {
   background: var(--color-primario);
   border: none;
   color: #fff;
-  border-radius: 6px;
+  border-radius: var(--radio);
   padding: 10px 18px;
   font-weight: 600;
   cursor: pointer;
@@ -232,14 +291,14 @@ button:hover {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--color-borde);
-  border-radius: 6px;
+  border-radius: var(--radio);
   font-size: 0.95rem;
 }
 
 .lista-agregados {
   background: var(--color-fondo);
   border: 1px solid var(--color-borde);
-  border-radius: 6px;
+  border-radius: var(--radio);
   min-height: 180px;
   padding: 10px;
 }
@@ -250,7 +309,8 @@ button:hover {
   gap: 10px;
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
-  border-radius: 6px;
+  border-left: 3px solid var(--color-primario);
+  border-radius: var(--radio);
   padding: 8px 10px;
   margin-bottom: 8px;
   align-items: center;
@@ -284,10 +344,27 @@ button:hover {
   font-weight: 600;
 }
 
-@media (max-width: 640px) {
-  .envio-cabecera,
+@media (max-width: 900px) {
   .envio-columnas {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .envio-cabecera {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-envio .fila-entrada {
+    grid-template-columns: 1fr;
+  }
+
+  .fila-ajuste-stock {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-overlay {
+    padding: 16px 12px;
   }
 }
 
@@ -399,7 +476,7 @@ button:hover {
 }
 
 .link-rol:hover {
-  background: rgba(132, 99, 168, 0.08);
+  background: rgba(194, 59, 52, 0.08);
 }
 
 .codigo-nota {
@@ -430,7 +507,7 @@ button:hover {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radio);
   background: var(--color-acento);
   color: #fff;
   margin-left: 10px;
@@ -488,6 +565,7 @@ button:hover {
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio);
+  box-shadow: var(--sombra);
   padding: 32px;
 }
 
@@ -529,7 +607,7 @@ button:hover {
   grid-template-columns: 1fr 1fr;
   gap: 6px 20px;
   background: var(--color-fondo);
-  border-radius: 6px;
+  border-radius: var(--radio);
   padding: 12px 16px;
   margin-bottom: 20px;
   font-size: 0.85rem;
@@ -573,6 +651,25 @@ button:hover {
   text-align: center;
 }
 
+@media (max-width: 640px) {
+  .factura-hoja {
+    padding: 18px;
+  }
+
+  .factura-datos-cliente {
+    grid-template-columns: 1fr;
+  }
+
+  .factura-cabecera {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .factura-cabecera .factura-folio {
+    text-align: left;
+  }
+}
+
 @media print {
   .factura-barra,
   header.app-header {
@@ -605,12 +702,12 @@ button:hover {
   flex: 1;
   padding: 12px 16px;
   border: 1px solid var(--color-borde);
-  border-radius: 14px;
+  border-radius: var(--radio);
   font-size: 0.95rem;
 }
 
 .historial-buscador button {
-  border-radius: 14px;
+  border-radius: var(--radio);
   padding: 12px 24px;
   white-space: nowrap;
 }
@@ -625,7 +722,8 @@ button:hover {
   background: var(--color-primario);
   color: #fff;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
   padding: 18px 22px;
   display: grid;
   grid-template-columns: 1fr 2fr auto;
@@ -670,6 +768,10 @@ button:hover {
   .historial-fila .historial-codigo {
     text-align: left;
   }
+
+  .historial-buscador {
+    flex-direction: column;
+  }
 }
 
 /* ============================================================
@@ -682,7 +784,7 @@ button:hover {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(51, 43, 58, 0.55);
+  background: rgba(38, 35, 34, 0.55);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -698,6 +800,7 @@ button:hover {
 .modal-factura {
   background: var(--color-fondo);
   border-radius: var(--radio);
+  box-shadow: var(--sombra);
   width: 100%;
   max-width: 760px;
 }
@@ -744,11 +847,13 @@ button:hover {
 .toast {
   min-width: 240px;
   max-width: 380px;
-  background: var(--color-primario-oscuro);
-  color: #fff;
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-left: 3px solid var(--color-primario);
   padding: 12px 16px;
   border-radius: var(--radio);
-  box-shadow: 0 8px 20px rgba(51, 43, 58, 0.28);
+  box-shadow: 0 8px 20px rgba(38, 35, 34, 0.18);
   font-size: 0.9rem;
   line-height: 1.4;
   opacity: 0;
@@ -767,11 +872,11 @@ button:hover {
 }
 
 .toast-exito {
-  background: var(--color-exito);
+  border-left-color: var(--color-exito);
 }
 
 .toast-error {
-  background: var(--color-alerta);
+  border-left-color: var(--color-alerta);
 }
 
 @media print {
@@ -812,13 +917,14 @@ button:hover {
 }
 
 .btn-secundario:hover {
-  background: rgba(132, 99, 168, 0.08);
+  background: rgba(194, 59, 52, 0.08);
   color: var(--color-primario-oscuro);
 }
 
 .modal-stock {
   background: var(--color-fondo);
   border-radius: var(--radio);
+  box-shadow: var(--sombra);
   width: 100%;
   max-width: 420px;
 }
@@ -837,6 +943,14 @@ button:hover {
 
 .modal-stock-cuerpo .campo {
   margin-bottom: 0;
+}
+
+.modal-stock-cuerpo .campo + .campo {
+  margin-top: 14px;
+}
+
+.modal-stock-cuerpo form > button[type="submit"] {
+  margin-top: 16px;
 }
 
 .stock-actual {
@@ -918,7 +1032,7 @@ button:hover {
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio);
-  box-shadow: 0 8px 20px rgba(51, 43, 58, 0.18);
+  box-shadow: 0 8px 20px rgba(38, 35, 34, 0.18);
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -937,7 +1051,7 @@ button:hover {
   text-align: left;
   padding: 8px 10px;
   font-size: 0.85rem;
-  border-radius: 6px;
+  border-radius: var(--radio);
 }
 
 .menu-imprimir-opciones button:hover {

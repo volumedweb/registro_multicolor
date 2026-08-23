@@ -59,7 +59,14 @@ async function eliminarCliente(id) {
   const { error } = await supabaseClient.from("clientes").delete().eq("id", id);
 
   if (error) {
-    mostrarMensaje("No se pudo eliminar el cliente: " + error.message, "error");
+    if (error.code === "23503") {
+      mostrarMensaje(
+        "No se puede eliminar: este cliente ya tiene envíos registrados en el historial. Para borrarlo, primero eliminá o reasigná esos envíos.",
+        "error"
+      );
+    } else {
+      mostrarMensaje("No se pudo eliminar el cliente: " + error.message, "error");
+    }
     return false;
   }
   return true;
@@ -146,20 +153,15 @@ function pintarTablaClientes(clientes) {
   });
 }
 
-/** Pide confirmación y elimina el cliente de esa fila. */
+/** Elimina el cliente de esa fila (sin ventana de confirmación aparte: el toast avisa el resultado). */
 async function manejarEliminarCliente(boton) {
   const id = boton.dataset.id;
   const nombre = boton.dataset.nombre;
 
-  const confirmado = confirm(
-    `¿Eliminar al cliente "${nombre}"? Esta acción no se puede deshacer.`
-  );
-  if (!confirmado) return;
-
   const eliminado = await eliminarCliente(id);
   if (!eliminado) return; // eliminarCliente ya mostró el error
 
-  mostrarMensaje("Cliente eliminado.");
+  mostrarMensaje(`Cliente "${nombre}" eliminado.`);
   cargarTablaClientes();
 }
 

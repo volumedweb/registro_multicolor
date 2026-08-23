@@ -43,7 +43,14 @@ async function eliminarTipoEmpaque(id) {
   const { error } = await supabaseClient.from("tipos_empaque").delete().eq("id", id);
 
   if (error) {
-    mostrarMensaje("No se pudo eliminar el tipo de empaque: " + error.message, "error");
+    if (error.code === "23503") {
+      mostrarMensaje(
+        "No se puede eliminar: este tipo de empaque ya se usó en envíos registrados. Para borrarlo, primero eliminá esos envíos.",
+        "error"
+      );
+    } else {
+      mostrarMensaje("No se pudo eliminar el tipo de empaque: " + error.message, "error");
+    }
     return false;
   }
   return true;
@@ -96,20 +103,15 @@ function pintarTablaEmpaques(tipos) {
   });
 }
 
-/** Pide confirmación y elimina el tipo de empaque de esa fila. */
+/** Elimina el tipo de empaque de esa fila (sin ventana de confirmación aparte: el toast avisa el resultado). */
 async function manejarEliminarTipoEmpaque(boton) {
   const id = boton.dataset.id;
   const nombre = boton.dataset.nombre;
 
-  const confirmado = confirm(
-    `¿Eliminar el tipo de empaque "${nombre}"? Esta acción no se puede deshacer.`
-  );
-  if (!confirmado) return;
-
   const eliminado = await eliminarTipoEmpaque(id);
   if (!eliminado) return; // eliminarTipoEmpaque ya mostró el error
 
-  mostrarMensaje("Tipo de empaque eliminado.");
+  mostrarMensaje(`Tipo de empaque "${nombre}" eliminado.`);
   cargarTablaEmpaques();
 }
 

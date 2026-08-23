@@ -636,18 +636,42 @@ button:hover {
   padding: 32px;
 }
 
+/* Modelo "clásico aligerado": el membrete ya no usa una franja de
+   color de fondo ni una línea gruesa — solo un isotipo con borde y un
+   filete fino, para gastar la menor tinta posible al imprimir. */
 .factura-cabecera {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 2px solid var(--color-primario);
+  border-bottom: 1px solid var(--color-texto);
   padding-bottom: 16px;
   margin-bottom: 18px;
 }
 
+.factura-cabecera .factura-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Isotipo "M": trazo de color, sin relleno */
+.factura-marca-icono {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--color-primario);
+  border-radius: var(--radio);
+  color: var(--color-primario);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
 .factura-cabecera .factura-marca strong {
   font-size: 1.2rem;
-  color: var(--color-primario-oscuro);
+  color: var(--color-texto);
 }
 
 .factura-cabecera .factura-marca p {
@@ -669,14 +693,30 @@ button:hover {
   font-size: 1rem;
 }
 
+/* Etiqueta de sección reutilizada por "Datos del envío" y por los h2
+   de detalle — reemplaza los antiguos bloques de fondo sólido */
+.factura-hoja .etiqueta-seccion {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primario);
+  margin: 18px 0 6px;
+}
+
+.factura-hoja .etiqueta-seccion:first-of-type {
+  margin-top: 0;
+}
+
 .factura-datos-cliente {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px 20px;
-  background: var(--color-fondo);
-  border-radius: var(--radio);
-  padding: 12px 16px;
-  margin-bottom: 20px;
+  background: transparent;
+  border-top: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+  padding: 10px 2px;
+  margin-bottom: 8px;
   font-size: 0.85rem;
 }
 
@@ -686,11 +726,12 @@ button:hover {
 }
 
 .factura-hoja h2 {
-  font-size: 0.9rem;
-  margin: 20px 0 8px;
-  color: var(--color-primario-oscuro);
+  font-size: 0.7rem;
+  margin: 18px 0 6px;
+  color: var(--color-primario);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
 }
 
 .factura-hoja table th {

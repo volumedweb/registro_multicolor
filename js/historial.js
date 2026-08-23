@@ -201,16 +201,35 @@ async function descargarFacturaPdf(modo = "completo") {
   const numero = document.getElementById("factura-numero").textContent;
   const sufijo = modo === "completo" ? "" : `-${modo}`;
 
+  // html2canvas calcula la región a capturar en base al scroll de la
+  // página y del propio modal (que tiene overflow-y: auto). Si el
+  // usuario venía con la ventana o el modal desplazados hacia abajo
+  // (historial largo, o scrolleó el modal para ver todo el detalle),
+  // captura mal y el PDF sale con un hueco en blanco arriba y el
+  // contenido cortado a la mitad. Se resetea el scroll del modal y de
+  // la página antes de capturar, y se le indica a html2canvas que
+  // ignore cualquier desplazamiento restante.
+  const overlay = document.getElementById("modal-factura");
+  const scrollModalPrevio = overlay ? overlay.scrollTop : 0;
+  const scrollPaginaPrevioX = window.scrollX;
+  const scrollPaginaPrevioY = window.scrollY;
+
+  if (overlay) overlay.scrollTop = 0;
+  window.scrollTo(0, 0);
+
   await html2pdf()
     .set({
       margin: 0.4,
       filename: `nota-envio-${numero}${sufijo}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
       jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
     })
     .from(elemento)
     .save();
+
+  if (overlay) overlay.scrollTop = scrollModalPrevio;
+  window.scrollTo(scrollPaginaPrevioX, scrollPaginaPrevioY);
 
   aplicarModoDetalle("completo");
 }

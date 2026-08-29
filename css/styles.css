@@ -744,14 +744,15 @@ button:hover {
 }
 
 .factura-firma {
-  /* margin-top: auto empuja las firmas al fondo de la hoja,
-     sin importar cuánto contenido haya arriba. */
-  margin-top: auto;
+  /* margin-top fijo: las firmas quedan cerca del contenido,
+     sin saltar a una nueva página cuando hay poco contenido. */
+  margin-top: 40px;
   padding-top: 32px;
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
   color: var(--color-texto-suave);
+  break-inside: avoid;
 }
 
 .factura-firma div {
@@ -917,7 +918,7 @@ button:hover {
 }
 
 .modal-factura {
-  background: var(--color-fondo);
+  background: var(--color-superficie);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
   width: 100%;

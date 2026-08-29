@@ -1258,7 +1258,7 @@ header.app-header nav a.cerrar-sesion:hover {
   align-items: start;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 680px) {
   .main-envio-grid {
     grid-template-columns: 1fr;
   }

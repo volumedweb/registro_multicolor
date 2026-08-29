@@ -628,12 +628,17 @@ button:hover {
 
 .factura-hoja {
   max-width: 720px;
+  /* Tamaño carta en pantalla: 8.5in × 11in a 96 dpi = 816 × 1056 px.
+     Con padding de 32px arriba y abajo el contenido ocupa 992 px. */
+  min-height: 1056px;
   margin: 16px auto 40px;
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
   padding: 32px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Modelo "clásico aligerado": el membrete ya no usa una franja de
@@ -654,19 +659,13 @@ button:hover {
   gap: 12px;
 }
 
-/* Isotipo "M": trazo de color, sin relleno */
-.factura-marca-icono {
-  width: 36px;
-  height: 36px;
+/* Logo de la empresa en lugar del isotipo "M" */
+.factura-logo {
+  height: 48px;
+  width: auto;
+  display: block;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid var(--color-primario);
   border-radius: var(--radio);
-  color: var(--color-primario);
-  font-weight: 700;
-  font-size: 1rem;
 }
 
 .factura-cabecera .factura-marca strong {
@@ -745,7 +744,10 @@ button:hover {
 }
 
 .factura-firma {
-  margin-top: 32px;
+  /* margin-top: auto empuja las firmas al fondo de la hoja,
+     sin importar cuánto contenido haya arriba. */
+  margin-top: auto;
+  padding-top: 32px;
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
@@ -779,6 +781,12 @@ button:hover {
 }
 
 @media print {
+  /* Hoja siempre tamaño carta con márgenes cómodos */
+  @page {
+    size: letter;
+    margin: 1.5cm 2cm;
+  }
+
   .factura-barra,
   header.app-header {
     display: none;
@@ -792,7 +800,10 @@ button:hover {
     box-shadow: none;
     border: none;
     margin: 0;
+    padding: 0;
     max-width: none;
+    /* Ocupa toda la altura de la carta menos los márgenes de @page */
+    min-height: calc(27.94cm - 3cm);
   }
 }
 
@@ -1176,4 +1187,379 @@ header.app-header nav a.cerrar-sesion {
 
 header.app-header nav a.cerrar-sesion:hover {
   color: var(--color-alerta);
+}
+/* ============================================================
+   Realizar envío — modal de previsualización (antes de guardar)
+   Muestra el detalle del envío para revisión. Desde acá se puede
+   volver a editar (sin perder datos) o confirmar y guardar.
+   ============================================================ */
+
+/* Barra superior del modal: apila el aviso sobre los botones */
+.preview-barra {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+/* Aviso informativo arriba de los botones */
+.preview-barra .preview-aviso {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-acento);
+  background: rgba(79, 132, 150, 0.08);
+  border: 1px solid rgba(79, 132, 150, 0.28);
+  border-radius: var(--radio);
+  padding: 8px 14px;
+  text-align: center;
+  line-height: 1.45;
+}
+
+/* Fila de botones: "← Volver a editar" y "✔ Confirmar y guardar" */
+.preview-barra .preview-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Botón verde "Confirmar y guardar" */
+.btn-confirmar-envio {
+  background: var(--color-exito);
+  font-weight: 600;
+}
+
+.btn-confirmar-envio:hover {
+  background: #336644;
+}
+
+.btn-confirmar-envio:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 540px) {
+  .preview-barra .preview-acciones {
+    flex-direction: column;
+  }
+}
+
+/* ============================================================
+   Realizar envío — layout con sidebar historial temporal
+   ============================================================ */
+
+/* El <main> de realizar-envio.html usa esta clase en lugar del
+   max-width normal, para dar espacio al sidebar de 260 px. */
+.main-envio-grid {
+  max-width: 1140px;
+  margin: 32px auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .main-envio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-temporal {
+    position: static;
+  }
+}
+
+/* ── Sidebar ── */
+.sidebar-temporal {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  position: sticky;
+  top: 20px;
+}
+
+.sidebar-header {
+  background: var(--color-primario);
+  color: #fff;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header > span:first-child {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.sidebar-badge {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.sidebar-body {
+  padding: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* ── Pedido temporal — cada tarjeta del sidebar ── */
+.pedido-temp {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 10px 11px;
+  margin-bottom: 8px;
+  background: var(--color-fondo);
+  transition: border-color .12s;
+}
+
+.pedido-temp:last-child {
+  margin-bottom: 0;
+}
+
+.pedido-temp .pt-cliente {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.pedido-temp .pt-detalle {
+  font-size: 0.75rem;
+  color: var(--color-texto-suave);
+  line-height: 1.4;
+}
+
+.pedido-temp .pt-hora {
+  font-size: 0.7rem;
+  color: #bbb;
+  margin-top: 4px;
+}
+
+.pedido-temp .pt-acciones {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-borde);
+}
+
+.btn-pt-reanudar {
+  flex: 1;
+  padding: 4px 0;
+  background: var(--color-primario);
+  color: #fff;
+  border: none;
+  border-radius: var(--radio);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-pt-reanudar:hover {
+  background: var(--color-primario-oscuro);
+}
+
+.btn-pt-eliminar {
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--color-texto-suave);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.btn-pt-eliminar:hover {
+  color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+/* Item activo — el que está cargado en el formulario */
+.pedido-temp.activo {
+  border-color: var(--color-primario);
+  background: #fff8f8;
+}
+
+.chip-activo {
+  display: inline-block;
+  background: #fde8e8;
+  color: var(--color-primario);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-left: 5px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+/* Estado vacío */
+.sidebar-vacio {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--color-texto-suave);
+  font-size: 0.8rem;
+}
+
+.sidebar-vacio-icono {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+  opacity: .4;
+}
+
+/* Pie del sidebar */
+.sidebar-footer {
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-borde);
+  font-size: 0.72rem;
+  color: var(--color-texto-suave);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.sidebar-footer strong {
+  color: var(--color-primario);
+}
+
+/* Botón secundario para guardar en temporal */
+.btn-guardar-temporal {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--color-texto-suave);
+  border: 1.5px dashed var(--color-borde);
+  font-size: 0.9rem;
+  padding: 12px;
+  font-weight: 500;
+}
+
+.btn-guardar-temporal:hover {
+  border-color: var(--color-primario);
+  color: var(--color-primario);
+  background: rgba(194, 59, 52, .04);
+}
+
+/* ============================================================
+   Estados de envío — badges en historial, acciones en modal
+   y banner de edición en realizar-envio.html
+   ============================================================ */
+
+/* Fila del historial: 4 columnas (cliente / descripción / código / badge) */
+.historial-fila {
+  grid-template-columns: 1fr 2fr auto auto;
+}
+
+/* Color de fila según estado */
+.historial-fila.estado-entregado {
+  background: #4a7a5a;
+}
+.historial-fila.estado-entregado:hover {
+  background: #3d6a4c;
+}
+.historial-fila.estado-cancelado {
+  background: #8a8278;
+}
+.historial-fila.estado-cancelado:hover {
+  background: #7a736a;
+}
+
+/* Badge de estado — pastilla sobre el fondo de color de la fila */
+.badge-estado {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Modal — barra ahora en columna para alojar la fila de acciones de estado */
+.modal-factura-barra {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 16px 20px 0;
+}
+
+/* Fila de acciones de estado (visible solo cuando Activo) */
+.modal-estado-acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.modal-estado-acciones[hidden] {
+  display: none;
+}
+
+/* Fila inferior: siempre visible (PDF + Eliminar + Cerrar) */
+.modal-acciones-fijas {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Botón verde "Marcar como entregado" */
+.btn-entregado {
+  background: #3a7d52;
+  color: #fff;
+}
+.btn-entregado:hover {
+  background: #2d6040;
+}
+
+/* Botón borde "Cancelar envío" */
+.btn-cancelar-envio {
+  background: transparent;
+  color: var(--color-texto-suave);
+  border: 1px solid var(--color-borde);
+}
+.btn-cancelar-envio:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: var(--color-texto-suave);
+}
+
+/* Avisos de estado bloqueado (Entregado / Cancelado) */
+.aviso-estado {
+  padding: 8px 14px;
+  border-radius: var(--radio);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.aviso-estado[hidden] {
+  display: none;
+}
+.aviso-entregado {
+  background: #e8f5ee;
+  color: #1d5c34;
+  border: 1px solid #a8d5b8;
+}
+.aviso-cancelado {
+  background: #f0eeed;
+  color: var(--color-texto-suave);
+  border: 1px solid var(--color-borde);
+}
+
+/* Banner de modo edición en realizar-envio.html */
+.banner-edicion {
+  background: #fff3cd;
+  color: #7a5c00;
+  border: 1px solid #ffc947;
+  border-radius: var(--radio);
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 20px;
 }

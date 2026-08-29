@@ -87,3 +87,165 @@ async function registrarSalida(datosSalida) {
   // insertan en ninguna tabla, solo se usan para imprimir esa nota).
   return { id: envio.id, numero_envio: envio.numero_envio };
 }
+
+// ============================================================
+// Cargar envío para editar (con IDs crudos, para pre-llenar
+// el formulario de realizar-envio.html en modo ?editar=ID)
+// ============================================================
+async function cargarEnvioParaEditar(envioId) {
+  const { data: envio, error } = await supabaseClient
+    .from("envios")
+    .select(
+      "id, numero_envio, estado, cliente_id, ciudad_destino, nombre_receptor, fecha, observaciones, clientes(nombre, telefono, direccion)"
+    )
+    .eq("id", envioId)
+    .single();
+
+  if (error || !envio) {
+    mostrarMensaje("No se pudo cargar el envío para editar.", "error");
+    return null;
+  }
+
+  const { data: productos } = await supabaseClient
+    .from("envio_productos")
+    .select("producto_id, cantidad, productos(nombre)")
+    .eq("envio_id", envioId);
+
+  const { data: empaques } = await supabaseClient
+    .from("envio_empaques")
+    .select("tipo_empaque_id, cantidad, tipos_empaque(nombre)")
+    .eq("envio_id", envioId);
+
+  return {
+    id: envio.id,
+    numero_envio: envio.numero_envio,
+    estado: envio.estado,
+    cliente_id: envio.cliente_id,
+    cliente_nombre: envio.clientes ? envio.clientes.nombre : "",
+    cliente_telefono: envio.clientes ? (envio.clientes.telefono || "") : "",
+    cliente_direccion: envio.clientes ? (envio.clientes.direccion || "") : "",
+    ciudad_destino: envio.ciudad_destino || "",
+    nombre_receptor: envio.nombre_receptor || "",
+    fecha: envio.fecha || "",
+    observaciones: envio.observaciones || "",
+    productos: (productos || []).map((p) => ({
+      producto_id: p.producto_id,
+      nombre: p.productos ? p.productos.nombre : "",
+      cantidad: p.cantidad,
+    })),
+    empaques: (empaques || []).map((e) => ({
+      tipo_empaque_id: e.tipo_empaque_id,
+      nombre: e.tipos_empaque ? e.tipos_empaque.nombre : "",
+      cantidad: e.cantidad,
+    })),
+  };
+}
+
+// ============================================================
+// Actualizar un envío ya guardado (modo edición)
+// ============================================================
+// Flujo:
+//   1. Lee las líneas de producto viejas y repone su stock
+//      (no hay trigger para restaurar al borrar — se hace acá).
+//   2. Borra las líneas de producto viejas.
+//   3. Actualiza la cabecera (cliente, ciudad, receptor, fecha, obs.).
+//   4. Inserta las líneas de producto nuevas → el trigger
+//      fn_descontar_stock descuenta el nuevo stock automáticamente.
+//   5. Reemplaza las líneas de empaque (borra + inserta).
+//
+// Devuelve { id, numero_envio } igual que registrarSalida().
+// El número de envío (folio) no cambia: el trigger que lo genera
+// es BEFORE INSERT — no vuelve a dispararse en un UPDATE.
+async function actualizarEnvio(envioId, datosNuevos) {
+  // 1. Leer líneas de producto viejas para reponer stock
+  const { data: productosViejos } = await supabaseClient
+    .from("envio_productos")
+    .select("producto_id, cantidad")
+    .eq("envio_id", envioId);
+
+  // 2. Reponer stock de cada producto viejo (lectura → suma → escritura)
+  for (const p of productosViejos || []) {
+    const { data: prod } = await supabaseClient
+      .from("productos")
+      .select("stock")
+      .eq("id", p.producto_id)
+      .single();
+    if (prod) {
+      await supabaseClient
+        .from("productos")
+        .update({ stock: prod.stock + p.cantidad })
+        .eq("id", p.producto_id);
+    }
+  }
+
+  // 3. Borrar líneas de producto viejas
+  await supabaseClient
+    .from("envio_productos")
+    .delete()
+    .eq("envio_id", envioId);
+
+  // 4. Actualizar cabecera del envío
+  const { error: errorUpdate } = await supabaseClient
+    .from("envios")
+    .update({
+      cliente_id: datosNuevos.cliente_id,
+      ciudad_destino: datosNuevos.ciudad_destino,
+      nombre_receptor: datosNuevos.nombre_receptor,
+      fecha: datosNuevos.fecha,
+      observaciones: datosNuevos.observaciones || null,
+    })
+    .eq("id", envioId);
+
+  if (errorUpdate) {
+    mostrarMensaje("No se pudo actualizar el envío: " + errorUpdate.message, "error");
+    return null;
+  }
+
+  // 5. Insertar nuevas líneas de producto (el trigger descuenta el nuevo stock)
+  if (datosNuevos.productos && datosNuevos.productos.length > 0) {
+    const { error: errorProd } = await supabaseClient
+      .from("envio_productos")
+      .insert(
+        datosNuevos.productos.map((p) => ({
+          envio_id: envioId,
+          producto_id: p.producto_id,
+          cantidad: p.cantidad,
+        }))
+      );
+    if (errorProd) {
+      mostrarMensaje(
+        "Envío actualizado, pero hubo un problema con los productos: " + errorProd.message,
+        "error"
+      );
+    }
+  }
+
+  // 6. Reemplazar líneas de empaque (borra + inserta)
+  await supabaseClient.from("envio_empaques").delete().eq("envio_id", envioId);
+  if (datosNuevos.empaques && datosNuevos.empaques.length > 0) {
+    const { error: errorEmp } = await supabaseClient
+      .from("envio_empaques")
+      .insert(
+        datosNuevos.empaques.map((e) => ({
+          envio_id: envioId,
+          tipo_empaque_id: e.tipo_empaque_id,
+          cantidad: e.cantidad,
+        }))
+      );
+    if (errorEmp) {
+      mostrarMensaje(
+        "Envío actualizado, pero hubo un problema con los empaques: " + errorEmp.message,
+        "error"
+      );
+    }
+  }
+
+  // Devuelve { id, numero_envio } — misma forma que registrarSalida()
+  const { data: envioActualizado } = await supabaseClient
+    .from("envios")
+    .select("id, numero_envio")
+    .eq("id", envioId)
+    .single();
+
+  return envioActualizado || { id: envioId };
+}

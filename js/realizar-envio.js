@@ -5,16 +5,23 @@
 // (datalist), agrega/quita líneas de producto y empaque al
 // envío, y arma los datos finales antes de guardarlos.
 //
-// Depende de (todavía con TODOs pendientes de conectar a Supabase):
+// Depende de:
 //   - listarClientes() / crearCliente()   (js/clientes.js)
 //   - listarProductos()                   (js/productos.js)
 //   - listarTiposEmpaque()                (js/empaques.js)
 //   - registrarSalida()                   (js/salidas.js)
 //   - mostrarMensaje() / esCantidadValida() (js/utils.js)
 //
-// Al confirmar, si registrarSalida devuelve { id, numero_envio } se
-// completa "Código de envío" y aparece el link a la nota de envío
-// imprimible (factura.html?envio_id=<id>, ver js/factura.js).
+// Flujo de guardado (con previsualización):
+//   1. El usuario llena el formulario y hace click en "Realizar envío".
+//   2. Se valida que haya al menos un producto o empaque.
+//   3. Se abre un modal de previsualización con los datos tal como
+//      se van a guardar — sin guardar nada en Supabase todavía.
+//   4. Desde el modal el usuario puede:
+//      - "← Volver a editar": cierra el modal y vuelve al formulario
+//        con todos los campos y listas tal como estaban.
+//      - "✔ Confirmar y guardar": recién acá se guarda en Supabase,
+//        se muestra el código de envío y la factura queda bloqueada.
 
 // ---------- SECCIÓN: Estado en memoria ----------
 // Controla: catálogos cacheados (para el autocompletado) y las líneas
@@ -25,11 +32,11 @@ let productosCache = [];
 let tiposEmpaqueCache = [];
 let productosEnEnvio = []; // { producto_id, nombre, cantidad }
 let empaquesEnEnvio = []; // { tipo_empaque_id, nombre, cantidad }
+let envioEnEdicionId = null; // id del envío que se está editando (null = modo nuevo)
 
 // ---------- SECCIÓN: Arranque de la página ----------
 // Controla: carga los catálogos, fija la fecha de hoy y engancha
-// todos los eventos del formulario (autocompletado, agregar líneas,
-// confirmar envío).
+// todos los eventos del formulario y del modal de previsualización.
 document.addEventListener("DOMContentLoaded", () => {
   cargarClientes();
   cargarProductos();
@@ -51,6 +58,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("form-envio")
     .addEventListener("submit", manejarEnvioFormulario);
+
+  // Botones del modal de previsualización
+  document
+    .getElementById("btn-confirmar-envio")
+    .addEventListener("click", confirmarGuardarEnvio);
+  document
+    .getElementById("btn-editar-envio")
+    .addEventListener("click", cerrarModalPreview);
+  // Cerrar el modal haciendo click fuera del contenido
+  document
+    .getElementById("modal-preview-envio")
+    .addEventListener("click", (evento) => {
+      if (evento.target.id === "modal-preview-envio") cerrarModalPreview();
+    });
+
+  iniciarModoEdicion();
 });
 
 // ---------- SECCIÓN: Fecha — siempre la de hoy, no se edita a mano ----------
@@ -97,12 +120,6 @@ async function cargarTiposEmpaque() {
 }
 
 // ---------- SECCIÓN: Cliente — autocompletar al coincidir con uno existente ----------
-// Controla: cuando el nombre tipeado coincide con un cliente del
-// catálogo, se completa su id y su teléfono (si lo tiene). Si no
-// coincide (cliente nuevo o todavía sin terminar de escribir), el
-// teléfono/dirección/ciudad quedan editables a mano: esos datos se
-// usan para este envío pero no se guardan en el catálogo de clientes
-// salvo que el cliente sea nuevo.
 
 function manejarSeleccionCliente(evento) {
   const nombreTipeado = evento.target.value.trim();
@@ -119,13 +136,6 @@ function manejarSeleccionCliente(evento) {
   );
 
   if (coincidencia) {
-    // Cliente ya registrado: se autocompletan sus datos de base. Se
-    // pueden editar acá nomás para esta pantalla — teléfono y dirección
-    // no tienen columna en "envios" (ver supabase/schema.sql), así que
-    // lo que se escriba solo se usa para imprimir la nota de este envío
-    // y nunca actualiza el registro del cliente. Ciudad sí se guarda
-    // como destino de este envío puntual (envios.ciudad_destino), pero
-    // tampoco modifica la ciudad "de base" del cliente.
     clienteIdInput.value = coincidencia.id;
     evento.target.classList.add("coincidencia");
 
@@ -156,8 +166,6 @@ function manejarSeleccionCliente(evento) {
 }
 
 // ---------- SECCIÓN: Producto — resolver el id cuando el texto coincide ----------
-// Controla: convierte el nombre tipeado en el <input> del producto a
-// su id real, buscándolo en el catálogo cacheado.
 
 function manejarSeleccionProducto(evento) {
   const nombreTipeado = evento.target.value.trim();
@@ -169,10 +177,6 @@ function manejarSeleccionProducto(evento) {
 }
 
 // ---------- SECCIÓN: Agregar/quitar líneas al envío ----------
-// Controla: valida y agrega cada línea de producto o empaque a los
-// arrays en memoria (productosEnEnvio / empaquesEnEnvio), y repinta
-// las listas visibles debajo de cada selector. También permite
-// quitar una línea ya agregada.
 
 /** Valida y agrega la línea de producto seleccionada al envío en curso. */
 function agregarProductoAlEnvio() {
@@ -282,12 +286,10 @@ function quitarEmpaque(indice) {
   pintarListaEmpaques();
 }
 
-// ---------- SECCIÓN: Confirmación — envío del formulario ----------
-// Controla: valida que haya al menos una línea cargada, crea el
-// cliente si es nuevo, arma el objeto final y llama a
-// registrarSalida() (js/salidas.js) para guardar todo en Supabase.
-// Si sale bien, muestra el código de envío y el link a la nota
-// imprimible.
+// ---------- SECCIÓN: Envío del formulario — abre previsualización ----------
+// Controla: valida que haya al menos una línea cargada y abre el
+// modal de previsualización. NO guarda nada en Supabase todavía —
+// eso ocurre solo cuando el usuario confirma desde el modal.
 
 async function manejarEnvioFormulario(evento) {
   evento.preventDefault();
@@ -300,14 +302,87 @@ async function manejarEnvioFormulario(evento) {
     return;
   }
 
+  abrirModalPreview();
+}
+
+// ---------- SECCIÓN: Modal de previsualización ----------
+// Controla: muestra el detalle completo del envío antes de guardarlo,
+// con la opción de volver a editar o confirmar definitivamente.
+
+/** Completa el modal de preview con los datos actuales del formulario
+ * y los arrays en memoria, y lo muestra. */
+function abrirModalPreview() {
+  const nombreCliente = document.getElementById("nombre-cliente").value.trim();
+  const receptor = document.getElementById("nombre-receptor").value.trim() || nombreCliente;
+  const telefono = document.getElementById("telefono-cliente").value.trim();
+  const direccion = document.getElementById("direccion-cliente").value.trim();
+  const ciudad = document.getElementById("ciudad-destino").value.trim();
+  const fecha = document.getElementById("fecha-envio").value;
+  const observaciones = document.getElementById("observaciones").value.trim();
+
+  // Datos del cliente
+  document.getElementById("preview-cliente").textContent = nombreCliente || "—";
+  document.getElementById("preview-receptor").textContent = receptor || "—";
+  document.getElementById("preview-telefono").textContent = telefono || "—";
+  document.getElementById("preview-direccion").textContent = direccion || "—";
+  document.getElementById("preview-ciudad").textContent = ciudad || "—";
+  document.getElementById("preview-fecha").textContent = fecha || "—";
+
+  // Tabla de productos
+  const tbodyProductos = document.getElementById("preview-tabla-productos");
+  if (productosEnEnvio.length > 0) {
+    tbodyProductos.innerHTML = productosEnEnvio
+      .map((p) => `<tr><td>${p.nombre}</td><td>${p.cantidad}</td></tr>`)
+      .join("");
+  } else {
+    tbodyProductos.innerHTML = `<tr><td colspan="2" style="color:var(--color-texto-suave);font-style:italic;">Sin productos en este envío.</td></tr>`;
+  }
+
+  // Tabla de empaques
+  const tbodyEmpaques = document.getElementById("preview-tabla-empaques");
+  if (empaquesEnEnvio.length > 0) {
+    tbodyEmpaques.innerHTML = empaquesEnEnvio
+      .map((e) => `<tr><td>${e.nombre}</td><td>${e.cantidad}</td></tr>`)
+      .join("");
+  } else {
+    tbodyEmpaques.innerHTML = `<tr><td colspan="2" style="color:var(--color-texto-suave);font-style:italic;">Sin empaques en este envío.</td></tr>`;
+  }
+
+  // Observaciones
+  const obsEl = document.getElementById("preview-observaciones");
+  if (observaciones) {
+    obsEl.textContent = `Observaciones: ${observaciones}`;
+    obsEl.hidden = false;
+  } else {
+    obsEl.hidden = true;
+  }
+
+  document.getElementById("modal-preview-envio").hidden = false;
+}
+
+/** Cierra el modal de previsualización y devuelve el foco al formulario
+ * para que el usuario pueda seguir editando. */
+function cerrarModalPreview() {
+  document.getElementById("modal-preview-envio").hidden = true;
+}
+
+// ---------- SECCIÓN: Confirmación definitiva — guarda en Supabase ----------
+// Controla: solo se llega acá desde el botón "Confirmar y guardar"
+// del modal de previsualización. Crea el cliente si es nuevo, arma
+// el objeto final y llama a registrarSalida(). Una vez guardado, ya
+// no se puede editar la factura.
+
+async function confirmarGuardarEnvio() {
+  const btnConfirmar = document.getElementById("btn-confirmar-envio");
+  btnConfirmar.disabled = true;
+  btnConfirmar.textContent = "Guardando…";
+
   let clienteId = document.getElementById("cliente-id").value;
   const telefonoTipeado = document.getElementById("telefono-cliente").value;
   const direccionTipeada = document.getElementById("direccion-cliente").value;
 
   if (!clienteId) {
-    // Nombre nuevo: se crea el cliente en el catálogo con lo que se haya
-    // escrito acá (teléfono, dirección, ciudad quedan como su info "de
-    // base" para la próxima vez). Si un campo quedó vacío, se guarda así.
+    // Nombre nuevo: se crea el cliente en el catálogo.
     const nuevoCliente = await crearCliente({
       nombre: document.getElementById("nombre-cliente").value,
       telefono: telefonoTipeado || null,
@@ -317,11 +392,6 @@ async function manejarEnvioFormulario(evento) {
     clienteId = nuevoCliente && nuevoCliente.id;
   }
 
-  // "Nombre de quien recibe" es un campo aparte porque no siempre es
-  // el cliente quien recoge el pedido (portería, otra persona
-  // autorizada, etc.). Si se deja vacío, se usa el nombre del cliente
-  // — así el caso más común (recibe el propio cliente) no obliga a
-  // escribirlo dos veces.
   const receptorTipeado = document.getElementById("nombre-receptor").value.trim();
   const nombreCliente = document.getElementById("nombre-cliente").value;
 
@@ -333,47 +403,49 @@ async function manejarEnvioFormulario(evento) {
     observaciones: document.getElementById("observaciones").value,
     productos: productosEnEnvio,
     empaques: empaquesEnEnvio,
-    // telefono y direccion NO son columnas de "envios": solo viajan acá
-    // para imprimir la nota de envío (el detalle), no se guardan en la
-    // base de datos. Si el cliente ya estaba registrado, pisar estos
-    // valores tampoco actualiza su registro en "clientes".
     nota_telefono: telefonoTipeado,
     nota_direccion: direccionTipeada,
   };
 
-  const envioCreado = await registrarSalida(datosSalida);
+  const esModoEdicion = !!envioEnEdicionId;
+  let envioCreado;
+  if (envioEnEdicionId) {
+    envioCreado = await actualizarEnvio(envioEnEdicionId, datosSalida);
+    envioEnEdicionId = null;
+  } else {
+    envioCreado = await registrarSalida(datosSalida);
+  }
 
-  // Una vez guardado, se muestra el folio y el link a la nota de envío
-  // imprimible (factura.html).
+  // Restaurar botón por si hubo un error y el usuario puede reintentar
+  btnConfirmar.disabled = false;
+  btnConfirmar.textContent = esModoEdicion ? "✔ Guardar cambios" : "✔ Confirmar y guardar";
+
   if (envioCreado && envioCreado.numero_envio) {
+    cerrarModalPreview();
+
     document.getElementById("codigo-envio").value = envioCreado.numero_envio;
     const linkFactura = document.getElementById("link-factura");
     linkFactura.href = `factura.html?envio_id=${envioCreado.id}`;
     linkFactura.hidden = false;
 
-    // El stock de los productos despachados y el catálogo de clientes
-    // (si se creó uno nuevo) cambiaron: se refrescan los catálogos en
+    // El stock y el catálogo de clientes cambiaron: se refrescan en
     // memoria para que el próximo envío parta con datos al día.
     cargarProductos();
     cargarClientes();
 
-    // Avisa con una notificación que se cierra sola (no bloquea la
-    // pantalla) y, recién cuando termina de desaparecer, limpia todos
-    // los productos/empaques cargados para que el usuario pueda
-    // arrancar el siguiente envío sin tener que borrar nada a mano.
-    mostrarMensaje("Envío registrado correctamente.", "exito", {
-      alCerrar: limpiarFormularioEnvio,
-    });
+    mostrarMensaje(
+      esModoEdicion ? "Envío actualizado correctamente." : "Envío registrado correctamente.",
+      "exito",
+      { alCerrar: limpiarFormularioEnvio }
+    );
   }
 }
 
 // ---------- SECCIÓN: Limpieza después de confirmar ----------
 // Controla: una vez que la notificación de "envío registrado" terminó
 // de desaparecer, deja la pantalla lista para cargar el siguiente
-// envío — vacía las líneas de producto/empaque agregadas y los datos
-// de cliente tipeados. El código de envío y el link a la nota impresa
-// quedan visibles (no se borran) para que el usuario todavía pueda
-// abrir/imprimir la nota del envío que se acaba de guardar.
+// envío. El código de envío y el link a la nota impresa quedan
+// visibles para que el usuario todavía pueda abrir/imprimir la nota.
 function limpiarFormularioEnvio() {
   productosEnEnvio = [];
   empaquesEnEnvio = [];
@@ -398,5 +470,79 @@ function limpiarFormularioEnvio() {
     "Se autocompleta si el cliente ya la tiene registrada";
 
   fijarFechaDeHoy();
+
+  // Si había un pedido temporal activo, eliminarlo del sidebar
+  // (fue confirmado definitivamente, ya no se necesita el borrador)
+  if (typeof htEliminarActivo === 'function') htEliminarActivo();
+
+  // Si se estaba editando un envío, quitar el banner y resetear el id
+  const bannerEd = document.querySelector(".banner-edicion");
+  if (bannerEd) bannerEd.remove();
+  envioEnEdicionId = null;
+
   nombreClienteInput.focus();
+}
+
+// ---------- SECCIÓN: Modo edición (cuando llega ?editar=ID en la URL) ----------
+// Controla: detecta el parámetro ?editar=<id>, carga el envío existente
+// (vía cargarEnvioParaEditar de js/salidas.js), pre-llena el formulario
+// y muestra un banner indicando que se está editando un envío ya guardado.
+
+async function iniciarModoEdicion() {
+  const params = new URLSearchParams(window.location.search);
+  const editarId = params.get("editar");
+  if (!editarId) return;
+
+  const datos = await cargarEnvioParaEditar(editarId);
+  if (!datos) {
+    mostrarMensaje("No se pudo cargar el envío para editar.", "error");
+    return;
+  }
+
+  if (datos.estado !== "activo") {
+    mostrarMensaje(
+      "Este envío ya fue marcado como entregado o cancelado — no se puede editar.",
+      "error"
+    );
+    return;
+  }
+
+  envioEnEdicionId = editarId;
+
+  // Pre-llenar datos del cliente
+  const inputNombre = document.getElementById("nombre-cliente");
+  inputNombre.value = datos.cliente_nombre;
+  document.getElementById("cliente-id").value = datos.cliente_id || "";
+  if (datos.cliente_id) inputNombre.classList.add("coincidencia");
+
+  document.getElementById("nombre-receptor").value = datos.nombre_receptor;
+  document.getElementById("telefono-cliente").value = datos.cliente_telefono;
+  document.getElementById("direccion-cliente").value = datos.cliente_direccion;
+  document.getElementById("ciudad-destino").value = datos.ciudad_destino;
+  document.getElementById("fecha-envio").value = datos.fecha;
+  document.getElementById("observaciones").value = datos.observaciones;
+
+  // Pre-llenar productos y empaques
+  productosEnEnvio.length = 0;
+  datos.productos.forEach((p) => productosEnEnvio.push(p));
+  pintarListaProductos();
+
+  empaquesEnEnvio.length = 0;
+  datos.empaques.forEach((e) => empaquesEnEnvio.push(e));
+  pintarListaEmpaques();
+
+  // Cambiar texto del botón confirmar
+  const btnConfirmar = document.getElementById("btn-confirmar-envio");
+  if (btnConfirmar) btnConfirmar.textContent = "✔ Guardar cambios";
+
+  // Mostrar banner de edición
+  const tarjeta = document.querySelector(".tarjeta");
+  if (tarjeta) {
+    const banner = document.createElement("div");
+    banner.className = "banner-edicion";
+    banner.textContent = `✏ Editando envío ${datos.numero_envio} — los cambios reemplazan el envío original`;
+    tarjeta.insertBefore(banner, tarjeta.firstChild);
+  }
+
+  mostrarMensaje(`Cargado envío ${datos.numero_envio} para editar.`, "exito");
 }

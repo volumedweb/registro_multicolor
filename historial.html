@@ -40,16 +40,32 @@
   <div class="modal-overlay" id="modal-factura" hidden>
     <div class="modal-factura">
       <div class="modal-factura-barra">
-        <div class="menu-imprimir" id="menu-descargar">
-          <button type="button" id="btn-descargar-pdf">Descargar PDF ▾</button>
-          <div class="menu-imprimir-opciones" id="menu-descargar-opciones" hidden>
-            <button type="button" data-modo="producto">Detalle por producto</button>
-            <button type="button" data-modo="paquete">Detalle por paquete</button>
-            <button type="button" data-modo="completo">Detalle completo</button>
-          </div>
+        <!-- Fila 1: acciones según estado del envío -->
+        <div class="modal-estado-acciones" id="acciones-activo" hidden>
+          <button type="button" id="btn-editar-historial" class="btn-secundario">✏ Editar envío</button>
+          <button type="button" id="btn-marcar-entregado" class="btn-entregado">✔ Marcar como entregado</button>
+          <button type="button" id="btn-marcar-cancelado" class="btn-cancelar-envio">✕ Cancelar envío</button>
         </div>
-        <button type="button" id="btn-eliminar-envio" class="btn-eliminar-envio">Eliminar envío</button>
-        <button type="button" id="btn-cerrar-modal" class="btn-cerrar">✕ Cerrar</button>
+        <div class="aviso-estado aviso-entregado" id="aviso-entregado" hidden>
+          ✔ Este envío fue marcado como entregado — ya no se puede editar
+        </div>
+        <div class="aviso-estado aviso-cancelado" id="aviso-cancelado" hidden>
+          ✕ Este envío fue cancelado — el stock fue repuesto automáticamente
+        </div>
+
+        <!-- Fila 2: siempre visible -->
+        <div class="modal-acciones-fijas">
+          <div class="menu-imprimir" id="menu-descargar">
+            <button type="button" id="btn-descargar-pdf">Descargar PDF ▾</button>
+            <div class="menu-imprimir-opciones" id="menu-descargar-opciones" hidden>
+              <button type="button" data-modo="producto">Detalle por producto</button>
+              <button type="button" data-modo="paquete">Detalle por paquete</button>
+              <button type="button" data-modo="completo">Detalle completo</button>
+            </div>
+          </div>
+          <button type="button" id="btn-eliminar-envio" class="btn-eliminar-envio">Eliminar envío</button>
+          <button type="button" id="btn-cerrar-modal" class="btn-cerrar">✕ Cerrar</button>
+        </div>
       </div>
 
       <div class="factura-hoja" id="factura-modal-contenido">

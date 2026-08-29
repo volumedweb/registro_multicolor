@@ -612,6 +612,18 @@ button:hover {
    del cliente, detalle de productos y de empaques apilados)
    ============================================================ */
 
+/* Vista standalone de la nota de envío: fondo blanco puro,
+   sin el efecto "tarjeta sobre gris" que da sensación de doble hoja */
+body.vista-factura {
+  background: #fff;
+}
+
+body.vista-factura .factura-hoja {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
 .factura-barra {
   max-width: 720px;
   margin: 20px auto 0;
@@ -952,6 +964,11 @@ button:hover {
 .modal-factura .factura-hoja {
   margin: 12px auto 24px;
   min-height: auto;
+  /* Una sola caja visible: la del modal — la hoja interna va sin borde ni sombra */
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
 }
 
 /* En el modal la firma sigue al contenido (no hay hoja de página fija) */

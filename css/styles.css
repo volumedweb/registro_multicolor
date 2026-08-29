@@ -733,6 +733,10 @@ button:hover {
   letter-spacing: 0.06em;
 }
 
+.factura-hoja table {
+  font-size: 0.85rem;
+}
+
 .factura-hoja table th {
   border-bottom: 1px solid var(--color-borde);
   color: var(--color-texto-suave);
@@ -744,9 +748,9 @@ button:hover {
 }
 
 .factura-firma {
-  /* margin-top fijo: las firmas quedan cerca del contenido,
-     sin saltar a una nueva página cuando hay poco contenido. */
-  margin-top: 40px;
+  /* margin-top: auto empuja las firmas al fondo de la hoja
+     cuando el contenido no llena la página completa. */
+  margin-top: auto;
   padding-top: 32px;
   display: flex;
   justify-content: space-between;
@@ -803,8 +807,10 @@ button:hover {
     margin: 0;
     padding: 0;
     max-width: none;
-    /* Ocupa toda la altura de la carta menos los márgenes de @page */
-    min-height: calc(27.94cm - 3cm);
+    /* height exacta de la hoja carta menos márgenes del @page (1.5cm + 1.5cm).
+       Usar height en lugar de min-height evita la segunda hoja vacía. */
+    height: calc(27.94cm - 3cm);
+    overflow: visible;
   }
 }
 
@@ -945,6 +951,12 @@ button:hover {
 
 .modal-factura .factura-hoja {
   margin: 12px auto 24px;
+  min-height: auto;
+}
+
+/* En el modal la firma sigue al contenido (no hay hoja de página fija) */
+.modal-factura .factura-firma {
+  margin-top: 40px;
 }
 
 /* ============================================================
